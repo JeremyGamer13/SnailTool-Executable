@@ -1,8 +1,16 @@
+# modules
 node_modules
 ./node_modules
 node_modules/*
+# app settings file
 ./settings.stsf
 settings.stsf
 /settings.stsf
+# html files from toolsnail website (can be found elsewhere)
 tools/old
+# build folder
 out
+# zip files from chromebook to laptop or laptop to chromebook
+snailtool-executable.zip
+SnailTool-Executable.zip
+Snailtool-Executable.zip
