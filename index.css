@@ -1,0 +1,41 @@
+* {
+    font-family: Segoe UI, Helvetica, sans-serif;
+    user-select: none;
+    font-size: 12px;
+}
+body {
+    overflow: hidden;
+}
+button {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #E1E1E1;
+    border-color: #ADADAD;
+    border-style: solid;
+    transition-duration: 0.5s;
+}
+button:focus {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #E1E1E1;
+    border-color: #0078D7;
+    border-style: solid;
+    transition-duration: 0.5s;
+    outline:unset;
+}
+button:hover {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #E5F1FB;
+    border-color: #0078D7;
+    border-style: solid;
+    transition-duration: 0.5s;
+}
+button:active {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #CCE4F7;
+    border-color: #005499;
+    border-style: solid;
+    transition-duration: 0.5s;
+}
