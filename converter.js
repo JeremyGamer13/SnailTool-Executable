@@ -11,6 +11,14 @@ class Converter {
     static JSONToLevelEditor = (json) => {
 
     }
+    static SnailaxToLevelEditor = (snailax) => {
+        const converted = Converter.SnailaxToJSON(snailax)
+        return Converter.JSONToLevelEditor(converted)
+    }
+    static LevelEditorToSnailax = (leveleditor) => {
+        const converted = Converter.LevelEditorToJSON(leveleditor)
+        return Converter.JSONToSnailax(converted)
+    }
 }
 
 module.exports = Converter
