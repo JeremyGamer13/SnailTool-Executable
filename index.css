@@ -39,3 +39,34 @@ button:active {
     border-style: solid;
     transition-duration: 0.5s;
 }
+textarea,
+input[type=text] {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    border-color: #CCCCCC;
+    border-style: solid;
+    transition-duration: 0.5s;
+    resize: none;
+}
+textarea,
+input[type=text]:hover {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    border-color: #7A7A7A;
+    border-style: solid;
+    transition-duration: 0.5s;
+    resize: none;
+}
+textarea,
+input[type=text]:focus {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    border-color: #0078D7;
+    border-style: solid;
+    transition-duration: 0.5s;
+    outline:unset;
+    resize: none;
+}

@@ -1,6 +1,8 @@
 const { app, BrowserWindow, dialog, ipcMain, Tray } = require('electron')
 const path = require('path')
 
+const IsDeveloperMode = true
+
 function createWindow() {
     const win = new BrowserWindow({
         title: "SnailTool",
@@ -8,7 +10,7 @@ function createWindow() {
         width: 1280,
         height: 720,
         webPreferences: {
-            devTools: false,
+            devTools: IsDeveloperMode,
             sandbox: false,
             spellcheck: false,
             preload: path.join(__dirname, 'preload.js')
@@ -16,12 +18,11 @@ function createWindow() {
     })
 
     win.loadFile('index.html')
-    win.removeMenu()
+    if (!IsDeveloperMode) win.removeMenu()
     return win
 }
 
 let window = null
-
 app.whenReady().then(() => {
     window = createWindow()
     app.___createdWindowForUse = window
@@ -47,6 +48,9 @@ ipcMain.handle("showDialog", (_, message) => {
 })
 ipcMain.handle("showOpenDialog", (_, data) => {
     return dialog.showOpenDialog(null, JSON.parse(data))
+})
+ipcMain.handle("showSaveDialog", (_, data) => {
+    return dialog.showSaveDialog(null, JSON.parse(data))
 })
 ipcMain.handle("setProgress", (_, precentage) => {
     return window.setProgressBar(Number(precentage))

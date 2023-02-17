@@ -7,23 +7,22 @@
         <p>Target File: <button id="targetFilePicker">No file selected</button></p>
         <button id="grabLastSavedLevel">Grab the last saved level editor level</button>
         <br>
-        <a>(the target file will be used for all operations)</a>
+        <a>The target file will be used for all operations.</a>
         <p>Backup Folder: <button id="BackupFolderPicker">No folder selected</button></p>
-        <a>(the backup folder will be used to store all saved files)</a>
+        <a>The backup folder will be used to store all saved files.</a>
+        <br>
+        <a>Use a new empty folder for backups! There is a small chance you can accidentally lose your existing files if you set a backup folder with files already inside.</a>
         <br>
         <br>
         <p>Game Save files:</p>
         <button id="OpenSaveEditor">Open the save editor</button>
-        <p>Level Editor Level files:</p>
+        <p>Snailax & Level Editor Level files:</p>
         <button id="OpenLevelEditor">Open Level Editor</button>
         <button id="GenerateThumbnail">Generate thumbnail</button>
-        <br>
+        <br><br>
         <button id="Convert_LevelEditorToSnailax">Convert Level Editor Level to Snailax Level</button>
         <button id="Convert_LevelEditorToJSON">Convert Level Editor Level to JSON</button>
         <button id="Convert_JSONToLevelEditor">Convert JSON to Level Editor Level</button>
-        <p>Snailax Level Files:</p>
-        <button id="OpenLevelEditor">Open Level Editor</button>
-        <button id="GenerateThumbnail">Generate thumbnail</button>
         <br>
         <button id="Convert_SnailaxToLevelEditor">Convert Snailax Level to Level Editor Level</button>
         <button id="Convert_SnailaxToJSON">Convert Snailax Level to JSON</button>
@@ -31,9 +30,12 @@
         <p>Miscellaneous</p>
         <button id="Backup_Save">Save to backup folder</button>
         <button id="Backup_Load">Replace with backup folder file</button>
+        <button id="Backup_List">Show all backup names</button>
         <br>
-        <a>You can set a name for your backups and load from them.</a>
+        <a>You can set a name for your backups and load from them. (ex: save backup as "abc", load as "abc")</a>
         <br>
         <a>You can technically use this to save multiple level editor levels.</a>
+        <br>
+        <a>Do not use this option with non UTF-8 files or very large files as it may cause errors when copying the file or cause the backup file to be useless.</a>
     </body>
 </html>
