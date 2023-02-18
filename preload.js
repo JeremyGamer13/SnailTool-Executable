@@ -231,4 +231,30 @@ window.addEventListener("DOMContentLoaded", () => {
         }
         RunWithJson(targetFile.content)
     }
+    Util.GetById("Convert_LevelEditorToJSON").onclick = () => {
+        Util.PCall(function () { Util.SetWindowProgress(0.5) })
+        const data = targetFile.content
+        let result = ""
+        let pcallResults = Util.PCall(function () {
+            const version = Number(String(data).replace(/\r/gmi, "").split("\n")[0])
+            if (version < 1.5) alert("This level is older than version 1.5. The level may not parse correctly and most likely will break when loading.")
+            if (version > 1.5) alert("This level is newer than version 1.5. The level may not parse correctly and most likely will break when loading.")
+            result = Converter.LevelEditorToJSON(data)
+        }, function (err) {
+            Util.DisplayMessage({
+                type: "error",
+                buttons: ["OK"],
+                title: "Error",
+                message: "Failed to convert file.",
+                detail: String(err),
+                normalizeAccessKeys: true
+            })
+        })
+        if (!pcallResults.success) return Util.PCall(function () { Util.SetWindowProgress(-1) })
+        console.log(result)
+        Util.AskToSaveFile(JSON.stringify(result), String(targetFile.name).split(".")[0] + ".json", [
+            { name: 'JSON', extensions: ['json'] }
+        ])
+        Util.PCall(function () { Util.SetWindowProgress(-1) })
+    }
 })

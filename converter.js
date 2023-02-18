@@ -427,11 +427,60 @@ class Converter {
         return data
     }
     static LevelEditorToJSON = (leveleditor) => {
+        const output = Converter.LevelJSONFormat
+        const fileData = []
+        const parsingData = String(leveleditor).replace(/\r/gmi, "").split("\n").map(value => {
+            return value.includes(":") ? value : value.replace(/ /gmi, "")
+        })
+        parsingData.push("END:")
+        parsingData.forEach(line => {
+            if (!(line == "" || line === null || line == "\n")) fileData.push(line)
+        })
+        output.version = fileData.shift()
 
+        let finishedParsingLevel = false
+        let i = 0
+        const keywords = [
+            "LEVEL DIMENSIONS:",
+            "TOOL DATA:",
+            "QUICK SLOTS:",
+            "PLACED OBJECTS:",
+            "WIRES:",
+            "END:"
+        ]
+        while (!finishedParsingLevel) {
+            const line = fileData[i]
+            if (line == "LEVEL DIMENSIONS:") {
+
+            }
+            if (line == "TOOL DATA:") {
+
+            }
+            if (line == "QUICK SLOTS:") {
+
+            }
+            if (line == "PLACED OBJECTS:") {
+
+            }
+            if (line == "WIRES:") {
+
+            }
+            if (line == "END:") {
+                finishedParsingLevel = true
+                continue
+            }
+            if (line == null || line == "") {
+                finishedParsingLevel = true
+                continue
+            }
+            i++
+        }
+
+        return output
     }
     static JSONToLevelEditor = (json) => {
-        // const parsingData = json
-        const parsingData = Converter.LevelJSONFormat
+        const parsingData = json
+        // const parsingData = Converter.LevelJSONFormat
         let data = parsingData.version + "\n\nLEVEL DIMENSIONS:\n"
         data += parsingData.options.room_xscale * 1920
         data += "\n"
