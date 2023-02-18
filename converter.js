@@ -20,6 +20,12 @@ class Converter {
         })
         return a
     }
+    static SafeNullAndNaN = (value) => {
+        if (typeof value == "number" && isNaN(value)) return 0
+        if (value == null) return 0
+        if (value == undefined) return 0
+        return value
+    }
     static AllSnailaxObjects = [
         "obj_wall",
         "obj_wallB",
@@ -305,9 +311,17 @@ class Converter {
             squid_disabled: false,
         }
     }
+    static CloneMainJSONFormat = () => {
+        const newObject = {}
+        const format = Converter.LevelJSONFormat
+        Object.getOwnPropertyNames(format).forEach(name => {
+            newObject[name] = format[name]
+        })
+        return newObject
+    }
     static SnailaxToJSON = (snailax) => {
         let input = snailax.replace(/\r/gmi, "")
-        const output = Converter.LevelJSONFormat
+        const output = Converter.CloneMainJSONFormat()
         output.snailaxVersion = String(input).charAt(0)
         if (output.snailaxVersion == "4") {
             input.replace("-", "0,0,|\n-")
@@ -364,6 +378,7 @@ class Converter {
             subObject.position.x = lineX
             subObject.position.y = lineY
             subObject.direction = rotation
+            subObject.scale = { x: 1, y: 1 }
             subObject.properties = []
             if (doorHeight != null) subObject.properties.push({ key: "doorHeight", value: doorHeight })
             if (corrupted != null) subObject.properties.push({ key: "coru", value: corrupted })
@@ -384,20 +399,20 @@ class Converter {
         let nodes = ["obj_antenna", "obj_antenna_floaty", "obj_antenna_big_range", "obj_power_generator"]
         let rotatable = ["obj_squasher", "obj_underwater_current", "obj_fish", "obj_door"]
         let data = json.snailaxVersion + `\n`
-        data += String(parsingData.options.ground_spike_probability) + "\n"
-        data += String(parsingData.options.wall_spike_probability) + "\n"
-        data += String(parsingData.options.ceiling_spike_probability) + "\n"
-        data += String(parsingData.options.air_cat_probability) + "\n"
-        data += String(parsingData.options.badball_probability) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.ground_spike_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.wall_spike_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.ceiling_spike_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.air_cat_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.badball_probability)) + "\n"
         data += String((parsingData.options.squid_disabled == true ? 1 : 0)) + "\n"
-        data += String(parsingData.options.ice_spike_falling_probability) + "\n"
-        data += String(parsingData.options.fireworks_probability) + "\n"
-        data += String(parsingData.options.conveyor_change_probability) + "\n"
-        data += String(parsingData.options.laser_probability) + "\n"
-        data += String(parsingData.options.room_xscale) + "\n"
-        data += String(parsingData.options.room_yscale) + "\n"
-        data += String(parsingData.options.song) + "\n"
-        data += String(parsingData.options.theme) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.ice_spike_falling_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.fireworks_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.conveyor_change_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.laser_probability)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.room_xscale)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.room_yscale)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.song)) + "\n"
+        data += String(Converter.SafeNullAndNaN(parsingData.options.theme)) + "\n"
         data += `0,0,|\n-` // idk what gimmicks are in snailax lol
         Object.getOwnPropertyNames(parsingData.objects).forEach(name => {
             const category = parsingData.objects[name]
@@ -406,20 +421,20 @@ class Converter {
                 data += "\n"
                 data += (Converter.LevelEditorSnailaxEquivalents[name] != null ? Converter.LevelEditorSnailaxEquivalents[name] : name)
                 data += ":"
-                data += item.position.x
+                data += Converter.SafeNullAndNaN(item.position.x)
                 data += ","
-                data += item.position.y
+                data += Converter.SafeNullAndNaN(item.position.y)
                 data += ","
                 if (item.direction != null) {
                     data += item.direction
                     data += ","
                 }
                 if (Converter.HasProperty("doorHeight", item.properties)) {
-                    data += Converter.GetProperty("doorHeight", item.properties)
+                    data += Converter.SafeNullAndNaN(Number(Converter.GetProperty("doorHeight", item.properties)))
                     data += ","
                 }
                 if (Converter.HasProperty("coru", item.properties)) {
-                    data += Converter.GetProperty("coru", item.properties)
+                    data += Converter.SafeNullAndNaN(Number(Converter.GetProperty("coru", item.properties)))
                     data += ","
                 }
             })
@@ -427,7 +442,7 @@ class Converter {
         return data
     }
     static LevelEditorToJSON = (leveleditor) => {
-        const output = Converter.LevelJSONFormat
+        const output = Converter.CloneMainJSONFormat()
         const fileData = []
         const parsingData = String(leveleditor).replace(/\r/gmi, "").split("\n").map(value => {
             return value.includes(":") ? value : value.replace(/ /gmi, "")
@@ -451,19 +466,114 @@ class Converter {
         while (!finishedParsingLevel) {
             const line = fileData[i]
             if (line == "LEVEL DIMENSIONS:") {
-
+                i++
+                output.options.room_xscale = Number(fileData[i]) / 1920 // width
+                i++
+                output.options.room_yscale = Number(fileData[i]) / 1080 // height
+                i++
+                continue
             }
             if (line == "TOOL DATA:") {
-
+                i++
+                let amountOfObjects = Number(fileData[i])
+                i++
+                for (let l = 0; l < amountOfObjects; l++) {
+                    output.toolData[fileData[i]] = {}
+                    let target = output.toolData[fileData[i]]
+                    i++
+                    target.direction = Number(fileData[i])
+                    i++
+                    if (!target.scale) {
+                        target.scale = {}
+                    }
+                    target.scale.x = Number(fileData[i])
+                    i++
+                    target.scale.y = Number(fileData[i])
+                    i++ // amount of properties
+                    let amountToRead = Number(fileData[i])
+                    target.properties = []
+                    i++
+                    for (let k = 0; k < amountToRead; k++) {
+                        // property name
+                        let key = fileData[i]
+                        i++
+                        let value = fileData[i]
+                        target.properties.push({ key: key, value: value })
+                        i++
+                    }
+                }
+                continue
             }
             if (line == "QUICK SLOTS:") {
-
+                output.quickSlots = []
+                i++
+                while (!keywords.includes(fileData[i])) {
+                    output.quickSlots.push(fileData[i])
+                    i++
+                }
+                continue
             }
             if (line == "PLACED OBJECTS:") {
-
+                i++
+                let amountOfObjects = Number(fileData[i])
+                i++
+                for (let l = 0; l < amountOfObjects; l++) {
+                    let target = output.objects[fileData[i]]
+                    if (!target) {
+                        output.objects[fileData[i]] = []
+                        target = output.objects[fileData[i]]
+                    }
+                    i++
+                    let amountOfSubobjects = Number(fileData[i])
+                    i++
+                    for (let m = 0; m < amountOfSubobjects; m++) {
+                        let subobject = {}
+                        subobject.position = {}
+                        subobject.position.x = Number(fileData[i])
+                        i++
+                        subobject.position.y = Number(fileData[i])
+                        i++
+                        subobject.direction = Number(fileData[i])
+                        i++
+                        subobject.scale = {}
+                        subobject.scale.x = Number(fileData[i])
+                        i++
+                        subobject.scale.y = Number(fileData[i])
+                        i++ // amount of properties
+                        let amountToRead = Number(fileData[i])
+                        subobject.properties = []
+                        i++
+                        for (let k = 0; k < amountToRead; k++) {
+                            // property name
+                            let key = fileData[i]
+                            i++
+                            let value = fileData[i]
+                            subobject.properties.push({ key: key, value: value })
+                            i++
+                        }
+                        target.push(subobject)
+                    }
+                }
+                continue
             }
             if (line == "WIRES:") {
-
+                i++
+                let amountToRead = Number(fileData[i])
+                output.wires = []
+                i++
+                for (let j = 0; j < amountToRead; j++) {
+                    let wire = { object: null, id: null, target: { object: null, id: null } }
+                    wire.object = fileData[i]
+                    i++
+                    wire.id = Number(fileData[i])
+                    i++
+                    wire.target.object = fileData[i]
+                    i++
+                    wire.target.id = Number(fileData[i])
+                    i++
+                    output.wires.push(wire)
+                }
+                continue
             }
             if (line == "END:") {
                 finishedParsingLevel = true
@@ -475,53 +585,56 @@ class Converter {
             }
             i++
         }
-
         return output
     }
     static JSONToLevelEditor = (json) => {
         const parsingData = json
         // const parsingData = Converter.LevelJSONFormat
         let data = parsingData.version + "\n\nLEVEL DIMENSIONS:\n"
-        data += parsingData.options.room_xscale * 1920
+        data += Converter.SafeNullAndNaN(parsingData.options.room_xscale) * 1920
         data += "\n"
-        data += parsingData.options.room_yscale * 1080
+        data += Converter.SafeNullAndNaN(parsingData.options.room_yscale) * 1080
         data += "\n\nTOOL DATA:\n" + Object.getOwnPropertyNames(parsingData.toolData).length + "\n"
         Object.getOwnPropertyNames(parsingData.toolData).forEach(toolName => {
-            const tool = parsingData.toolData[toolName]
+            if (Converter.AllSnailaxObjects.includes(toolName) && (!Converter.SnailaxLevelEditorEquivalents[toolName])) return
+            const tool = ((Converter.AllSnailaxObjects.includes(toolName) && Converter.SnailaxLevelEditorEquivalents[toolName]) ? parsingData.toolData[Converter.SnailaxLevelEditorEquivalents[toolName]] : parsingData.toolData[toolName])
             data += toolName + "\n"
-            data += tool.direction + "\n"
-            data += tool.scale.x + "\n"
-            data += tool.scale.y + "\n"
-            data += tool.properties.length + "\n"
+            data += Converter.SafeNullAndNaN(tool.direction) + "\n"
+            data += Converter.SafeNullAndNaN(tool.scale.x) + "\n"
+            data += Converter.SafeNullAndNaN(tool.scale.y) + "\n"
+            data += Converter.SafeNullAndNaN(tool.properties.length) + "\n"
             tool.properties.forEach(property => {
-                data += property.key + "\n"
-                data += property.value + "\n"
+                data += Converter.SafeNullAndNaN(property.key) + "\n"
+                data += Converter.SafeNullAndNaN(property.value) + "\n"
             })
         })
         data += "\nQUICK SLOTS:\n" + parsingData.quickSlots.join("\n") + "\n\nPLACED OBJECTS:\n" + Object.getOwnPropertyNames(parsingData.objects).length + "\n"
         Object.getOwnPropertyNames(parsingData.objects).forEach(objectName => {
+            if (Converter.AllSnailaxObjects.includes(objectName) && (!Converter.SnailaxLevelEditorEquivalents[objectName])) return
+            objectName = ((Converter.AllSnailaxObjects.includes(objectName) && Converter.SnailaxLevelEditorEquivalents[objectName]) ? Converter.SnailaxLevelEditorEquivalents[objectName] : objectName)
             data += objectName + "\n"
+            data += Converter.SafeNullAndNaN(parsingData.objects[objectName].length) + "\n"
             parsingData.objects[objectName].forEach(objectData => {
-                data += parsingData.objects[objectName].length + "\n"
-                data += objectData.position.x + "\n"
-                data += objectData.position.y + "\n"
-                data += objectData.direction + "\n"
-                data += objectData.scale.x + "\n"
-                data += objectData.scale.y + "\n"
-                data += objectData.properties.length + "\n"
+                data += Converter.SafeNullAndNaN(objectData.position.x) + "\n"
+                data += Converter.SafeNullAndNaN(objectData.position.y) + "\n"
+                data += Converter.SafeNullAndNaN(objectData.direction) + "\n"
+                data += Converter.SafeNullAndNaN(objectData.scale.x) + "\n"
+                data += Converter.SafeNullAndNaN(objectData.scale.y) + "\n"
+                data += Converter.SafeNullAndNaN(objectData.properties.length) + "\n"
                 objectData.properties.forEach(property => {
-                    data += property.key + "\n"
-                    data += property.value + "\n"
+                    data += Converter.SafeNullAndNaN(property.key) + "\n"
+                    data += Converter.SafeNullAndNaN(property.value) + "\n"
                 })
             })
         })
         data += "\nWIRES:\n" + parsingData.wires.length + "\n"
         parsingData.wires.forEach(wire => {
-            data += wire.object + "\n"
-            data += wire.id + "\n"
-            data += wire.target.object + "\n"
-            data += wire.target.id + "\n"
+            data += Converter.SafeNullAndNaN((Converter.AllSnailaxObjects.includes(wire.object) && Converter.SnailaxLevelEditorEquivalents[wire.object]) ? Converter.SnailaxLevelEditorEquivalents[wire.object] : wire.object) + "\n"
+            data += Converter.SafeNullAndNaN(wire.id) + "\n"
+            data += Converter.SafeNullAndNaN((Converter.AllSnailaxObjects.includes(wire.target.object) && Converter.SnailaxLevelEditorEquivalents[wire.target.object]) ? Converter.SnailaxLevelEditorEquivalents[wire.target.object] : wire.target.object) + "\n"
+            data += Converter.SafeNullAndNaN(wire.target.id) + "\n"
         })
+        return data
     }
     static SnailaxToLevelEditor = (snailax) => {
         const converted = Converter.SnailaxToJSON(snailax)

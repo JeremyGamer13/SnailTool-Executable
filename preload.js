@@ -186,6 +186,7 @@ window.addEventListener("DOMContentLoaded", () => {
             if (Number(String(data).charAt(0)) > 5) alert("This snailax level is newer than version 5. The level may not parse correctly and most likely will break when loading.")
             result = Converter.SnailaxToJSON(data)
         }, function (err) {
+            console.error(err)
             Util.DisplayMessage({
                 type: "error",
                 buttons: ["OK"],
@@ -210,6 +211,7 @@ window.addEventListener("DOMContentLoaded", () => {
             let pcallResults = Util.PCall(function () {
                 result = Converter.JSONToSnailax(data)
             }, function (err) {
+                console.error(err)
                 Util.DisplayMessage({
                     type: "error",
                     buttons: ["OK"],
@@ -241,6 +243,7 @@ window.addEventListener("DOMContentLoaded", () => {
             if (version > 1.5) alert("This level is newer than version 1.5. The level may not parse correctly and most likely will break when loading.")
             result = Converter.LevelEditorToJSON(data)
         }, function (err) {
+            console.error(err)
             Util.DisplayMessage({
                 type: "error",
                 buttons: ["OK"],
@@ -254,6 +257,92 @@ window.addEventListener("DOMContentLoaded", () => {
         console.log(result)
         Util.AskToSaveFile(JSON.stringify(result), String(targetFile.name).split(".")[0] + ".json", [
             { name: 'JSON', extensions: ['json'] }
+        ])
+        Util.PCall(function () { Util.SetWindowProgress(-1) })
+    }
+    Util.GetById("Convert_JSONToLevelEditor").onclick = () => {
+        function RunWithJson(json) {
+            Util.PCall(function () { Util.SetWindowProgress(0.5) })
+            const data = JSON.parse(json)
+            let result = ""
+            let pcallResults = Util.PCall(function () {
+                result = Converter.JSONToLevelEditor(data)
+            }, function (err) {
+                console.error(err)
+                Util.DisplayMessage({
+                    type: "error",
+                    buttons: ["OK"],
+                    title: "Error",
+                    message: "Failed to convert file.",
+                    detail: String(err),
+                    normalizeAccessKeys: true
+                })
+            })
+            if (!pcallResults.success) return Util.PCall(function () { Util.SetWindowProgress(-1) })
+            console.log(result)
+            Util.AskToSaveFile(result, String(targetFile.name).split(".")[0] + ".lvl", [
+                { name: 'Level Data', extensions: ['lvl'] }
+            ])
+            Util.PCall(function () { Util.SetWindowProgress(-1) })
+        }
+        if (!Util.IsJson(targetFile.content)) {
+            return alert("The target file is not a valid JSON file.")
+        }
+        RunWithJson(targetFile.content)
+    }
+    // mod to real | real to mod
+    Util.GetById("Convert_SnailaxToLevelEditor").onclick = () => {
+        Util.PCall(function () { Util.SetWindowProgress(0.5) })
+        const data = targetFile.content
+        let result = ""
+        let pcallResults = Util.PCall(function () {
+            alert("The official level editor currently does not have some of the snailax objects. You may have problems loading the level or some elements will be missing.")
+            if (Number(String(data).charAt(0)) < 4) alert("This snailax level is older than version 4. The level may not convert correctly and most likely will break when loading.")
+            if (Number(String(data).charAt(0)) > 5) alert("This snailax level is newer than version 5. The level may not convert correctly and most likely will break when loading.")
+            result = Converter.SnailaxToLevelEditor(data)
+        }, function (err) {
+            console.error(err)
+            Util.DisplayMessage({
+                type: "error",
+                buttons: ["OK"],
+                title: "Error",
+                message: "Failed to convert file.",
+                detail: String(err),
+                normalizeAccessKeys: true
+            })
+        })
+        if (!pcallResults.success) return Util.PCall(function () { Util.SetWindowProgress(-1) })
+        console.log(result)
+        Util.AskToSaveFile(result, String(targetFile.name).split(".")[0] + ".lvl", [
+            { name: 'Level Data', extensions: ['lvl'] }
+        ])
+        Util.PCall(function () { Util.SetWindowProgress(-1) })
+    }
+    Util.GetById("Convert_LevelEditorToSnailax").onclick = () => {
+        Util.PCall(function () { Util.SetWindowProgress(0.5) })
+        const data = targetFile.content
+        let result = ""
+        let pcallResults = Util.PCall(function () {
+            alert("Snailax currently does not support some of the level editor tools such as wires or AI triggers. The level may be slightly different from the level editor or fail to load if the object is not present in Snailax.")
+            const version = Number(String(data).replace(/\r/gmi, "").split("\n")[0])
+            if (version < 1.5) alert("This level is older than version 1.5. The level may not convert correctly and most likely will break when loading.")
+            if (version > 1.5) alert("This level is newer than version 1.5. The level may not convert correctly and most likely will break when loading.")
+            result = Converter.LevelEditorToSnailax(data)
+        }, function (err) {
+            console.error(err)
+            Util.DisplayMessage({
+                type: "error",
+                buttons: ["OK"],
+                title: "Error",
+                message: "Failed to convert file.",
+                detail: String(err),
+                normalizeAccessKeys: true
+            })
+        })
+        if (!pcallResults.success) return Util.PCall(function () { Util.SetWindowProgress(-1) })
+        console.log(result)
+        Util.AskToSaveFile(result, String(targetFile.name).split(".")[0] + ".wysld", [
+            { name: 'Will You Snail Level Data', extensions: ['wysld'] }
         ])
         Util.PCall(function () { Util.SetWindowProgress(-1) })
     }
