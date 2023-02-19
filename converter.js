@@ -1,24 +1,34 @@
 class Converter {
     static GetProperty = (name, properties) => {
         let a = null
-        properties.forEach(property => {
-            if (property.key == name) a = property
-        })
+        for (let i = 0; i < properties.length; i++) {
+            const property = properties[i]
+            if (property.key == name) a = property.value
+        }
         return a
     }
     static HasProperty = (name, properties) => {
         let a = false
-        properties.forEach(property => {
+        for (let i = 0; i < properties.length; i++) {
+            const property = properties[i]
             if (property.key == name) a = true
-        })
+        }
         return a
     }
     static HasPropertyEqualTo = (name, value, properties) => {
         let a = false
-        properties.forEach(property => {
+        for (let i = 0; i < properties.length; i++) {
+            const property = properties[i]
             if (property.key == name && property.value == value) a = true
-        })
+        }
         return a
+    }
+    static SetProperty = (name, value, properties) => {
+        const list = JSON.parse(JSON.stringify(properties))
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].key == name) list[i].value = value
+        }
+        return list
     }
     static SafeNullAndNaN = (value) => {
         if (typeof value == "number" && isNaN(value)) return 0
@@ -312,12 +322,8 @@ class Converter {
         }
     }
     static CloneMainJSONFormat = () => {
-        const newObject = {}
         const format = Converter.LevelJSONFormat
-        Object.getOwnPropertyNames(format).forEach(name => {
-            newObject[name] = format[name]
-        })
-        return newObject
+        return JSON.parse(JSON.stringify(format))
     }
     static SnailaxToJSON = (snailax) => {
         let input = snailax.replace(/\r/gmi, "")

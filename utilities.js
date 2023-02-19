@@ -413,8 +413,35 @@ class Util {
                 })
             })
         } catch (err) {
-            Util.DisplayClosingError("Failed to save file requrest using RemoteRequest in Util: " + String(err))
+            Util.DisplayClosingError("Failed to save file request using RemoteRequest in Util: " + String(err))
         }
+    }
+    static SwitchMenuFile = (file) => {
+        try {
+            Util.RemoteRequest("switchMenuFile", file)
+        } catch (err) {
+            Util.DisplayMessage({
+                type: "error",
+                buttons: ["OK"],
+                title: "Error",
+                message: "Failed to switch menus.",
+                detail: String("Failed to switch menu request using RemoteRequest in Util: " + String(err)),
+                normalizeAccessKeys: true
+            })
+        }
+    }
+    // memory
+    static SaveToMemory = (key, value) => {
+        return Util.RemoteRequest("saveToMemory", JSON.stringify({ key: key, value: value }))
+    }
+    static GetFromMemory = (key) => {
+        return Util.RemoteRequest("getFromMemory", key)
+    }
+    static DeleteFromMemory = (key) => {
+        return Util.RemoteRequest("deleteFromMemory", key)
+    }
+    static ExistsInMemory = (key) => {
+        return Util.RemoteRequest("existsInMemory", key)
     }
 }
 

@@ -9,6 +9,7 @@ function createWindow() {
         icon: "wrench.png",
         width: 1280,
         height: 720,
+        backgroundColor: "#F0F0F0",
         webPreferences: {
             devTools: IsDeveloperMode,
             sandbox: false,
@@ -43,6 +44,7 @@ app.on('window-all-closed', () => {
     }
 })
 
+const MenuMemory = {}
 ipcMain.handle("showDialog", (_, message) => {
     return dialog.showMessageBoxSync(null, JSON.parse(message))
 })
@@ -57,4 +59,21 @@ ipcMain.handle("setProgress", (_, precentage) => {
 })
 ipcMain.handle("quitApp", (_, __) => {
     app.quit()
+})
+ipcMain.handle("switchMenuFile", (_, file) => {
+    window.loadFile(file)
+})
+// menu memory management
+ipcMain.handle("saveToMemory", (_, data) => {
+    const parsed = JSON.parse(data)
+    MenuMemory[parsed.key] = parsed.value
+})
+ipcMain.handle("getFromMemory", (_, key) => {
+    return MenuMemory[key]
+})
+ipcMain.handle("deleteFromMemory", (_, key) => {
+    delete MenuMemory[key]
+})
+ipcMain.handle("existsInMemory", (_, key) => {
+    return MenuMemory[key] != null || MenuMemory[key] != undefined
 })
