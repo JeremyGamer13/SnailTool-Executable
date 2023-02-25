@@ -17,3 +17,4 @@ Known issues:
 - Text boxes randomly stop working after a pop-up sometimes (minimize window and then focus on it again to fix)
 
 Any suggestions or issues not listed can be added in the Issues tab.
+Please let me know if this tool breaks any rules Jonas has for his game, and if the license needs to be changed or added if it wasn't added properly.
