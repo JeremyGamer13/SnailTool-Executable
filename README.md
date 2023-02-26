@@ -18,3 +18,18 @@ Known issues:
 
 Any suggestions or issues not listed can be added in the Issues tab.
 Please let me know if this tool breaks any rules Jonas has for his game, and if the license needs to be changed or added if it wasn't added properly.
+
+# Running or Compiling
+Here's instructions on how to prep your computer for running or compiling the program locally.
+1. Download the repository
+2. Install NodeJS
+3. If you are compiling, install Git and restart your machine
+4. Open the folder you downloaded the repo into using a command line
+5. Run ``npm install``
+
+To run the program locally:
+1. Run ``npm start``
+
+To compile the program locally:
+1. Run ``npm run make``
+2. Check the folder it mentions when compiling is complete
