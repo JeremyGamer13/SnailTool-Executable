@@ -34,4 +34,14 @@ Here's instructions on how to prep your computer for running or compiling the pr
 
 **To compile the program locally:**
 1. Run ``npm run make``
-2. Check the folder it mentions when compiling is complete
+2. Check the `out` folder when complete
+
+# Extra program details
+All releases are currently only on Windows.
+The program is built on Electron though, so you might be able to compile it yourself if you are using Linux or Mac.
+
+Backups require a folder that you set. DO NOT USE ANY FOLDER WITH .bak FILES ALREADY INSIDE. You may end up overwriting those backups.
+
+Also make sure to never select ANY important files as the editing target in the program as they could be overwritten.
+
+All app settings are stored as `settings.stsf` in the same directory as the .exe file. If you want to change your "last saved editor level" path to something else, edit it there for now.
