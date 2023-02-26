@@ -485,8 +485,8 @@
                         Util.CreateElement("img", TileHolder, img => {
                             Util.Restyle(img, {
                                 position: "absolute",
-                                left: `${0 + scaleAndOffset.offset.x}px`,
-                                top: `${0 + scaleAndOffset.offset.y}px`,
+                                left: `${0 + (scaleAndOffset.offset.x * tileWidth)}px`,
+                                top: `${0 + (scaleAndOffset.offset.y * tileHeight)}px`,
                                 width: Math.abs((tileWidth * scaleAndOffset.scale.x) * 60) + "px",
                                 height: Math.abs((tileHeight * scaleAndOffset.scale.y) * 60) + "px",
                             })
@@ -668,14 +668,36 @@
                                     input.placeholder = "Value"
                                     input.value = property.value
                                     input.onchange = () => {
-                                        currentTool.properties = Converter.SetProperty(property.key, property.value, currentTool.properties)
-                                        console.log("updated tool properties", currentTool.properties)
+                                        const tryChange = Converter.SetProperty(property.key, input.value, currentTool.properties)
+                                        currentTool.properties = tryChange
+                                        // console.log("updated tool properties", currentTool.properties, "to", tryChange)
                                     }
                                 })
                             })
                             Util.CreateElement("br", propertyMenu)
                         })
                     }
+                    const ToolPlacementElements = {
+                        scale: {
+                            x: Util.GetById("Details_ScaleX"),
+                            y: Util.GetById("Details_ScaleY")
+                        },
+                        alignment: {
+                            x: Util.GetById("Details_AlignmentX"),
+                            y: Util.GetById("Details_AlignmentY")
+                        },
+                        rotation: {
+                            degrees: Util.GetById("Details_RotationDegrees"),
+                            amount: Util.GetById("Details_RotationAmount")
+                        }
+                    }
+                    function UpdatePlacementElements() {
+                        currentTool.scale.x = Converter.SafeNullAndNaN(Number(ToolPlacementElements.scale.x.value))
+                        currentTool.scale.y = Converter.SafeNullAndNaN(Number(ToolPlacementElements.scale.y.value))
+                        currentTool.direction = Converter.SafeNullAndNaN(Number(ToolPlacementElements.rotation.degrees.value))
+                    }
+                    ToolPlacementElements.scale.x.onchange = UpdatePlacementElements
+                    ToolPlacementElements.scale.y.onchange = UpdatePlacementElements
                     Util.GetByTag("button").forEach(button => {
                         if (String(button.id).startsWith("Tool_")) {
                             button.onclick = () => {
@@ -691,8 +713,15 @@
                         if (!currentTool) return
                         if (currentTool.name == "delete_tool" || currentTool.name == "wire_tool") return
                         const offset = TileHolder.getClientRects()[0]
-                        const x = TileHolder.scrollLeft + (e.x - offset.x)
-                        const y = TileHolder.scrollTop + (e.y - offset.y)
+                        const _x = TileHolder.scrollLeft + (e.x - offset.x)
+                        const _y = TileHolder.scrollTop + (e.y - offset.y)
+                        UpdatePlacementElements()
+                        const gridSize = {
+                            x: Math.round(Util.Clamp(ToolPlacementElements.alignment.x.value, 0, Infinity)),
+                            y: Math.round(Util.Clamp(ToolPlacementElements.alignment.y.value, 0, Infinity)),
+                        }
+                        const x = (gridSize.x == 0 ? _x : (gridSize.x * Math.round(_x / gridSize.x)))
+                        const y = (gridSize.y == 0 ? _y : (gridSize.y * Math.round(_y / gridSize.y)))
                         const corrupted = Number(Converter.GetProperty("coru", currentTool.properties)) == 1
                         CreateObject(
                             currentTool.name,
@@ -704,6 +733,12 @@
                             corrupted
                         )
                     }
+                    Util.GetDocumentBody().addEventListener("keypress", (e) => {
+                        if (e.key == "e" || e.key == "E") {
+                            currentTool.direction += Converter.SafeNullAndNaN(Number(ToolPlacementElements.rotation.amount.value))
+                            ToolPlacementElements.rotation.degrees.value = currentTool.direction
+                        }
+                    })
                 })();
                 break
             case "SaveEditor":
