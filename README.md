@@ -29,7 +29,7 @@ Here's instructions on how to prep your computer for running or compiling the pr
 5. Run ``npm install``
 
 **To run the program locally:**
-1. Run ``npm start``
+1. Run ``npm run quick``
 
 **To compile the program locally:**
 1. Run ``npm run make``
