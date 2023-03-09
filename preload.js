@@ -36,6 +36,12 @@
             }
             Util.SwitchMenuFile("tools/leveleditor.html")
         }
+        Util.GetById("Navbar_Credits").onclick = async () => {
+            if (targetFile) {
+                await Util.SaveToMemory("TargetPath", targetFile.path)
+            }
+            Util.SwitchMenuFile("tools/credits.html")
+        }
 
         const DocumentType = Util.GetById("DocumentHandleType").innerHTML
         console.log("loading", DocumentType, "scripts")

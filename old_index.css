@@ -2,8 +2,6 @@
     font-family: Segoe UI, Helvetica, sans-serif;
     user-select: none;
     font-size: 12px;
-    color: #f0c0e3;
-    /*! margin-bottom: 5px; */
 }
 img {
     user-select: none;
@@ -11,41 +9,45 @@ img {
 }
 body {
     overflow: hidden;
-    background-color: rgb(14,0,14);
+    background-color: #F0F0F0;
 }
 .windowsbutton {
     border-width: 1px;
-    border-radius: 6px;
-    background-color: rgba(0,0,0,0);
-    border-color: #85448E;
+    border-radius: 0px;
+    background-color: #E1E1E1;
+    border-color: #ADADAD;
     border-style: solid;
     transition-duration: 0.5s;
-    padding: 10px;
-    margin: 3px;
-    margin-bottom: 6px;
-    cursor: pointer;
 }
-.windowsbutton:focus,
-.windowsbutton:hover {
+.windowsbutton:focus {
     border-width: 1px;
-    border-radius: 6px;
-    background-color: #331F30;
-    border-color: #EA81F9;
+    border-radius: 0px;
+    background-color: #E1E1E1;
+    border-color: #0078D7;
     border-style: solid;
     transition-duration: 0.5s;
     outline:unset;
 }
+.windowsbutton:hover {
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #E5F1FB;
+    border-color: #0078D7;
+    border-style: solid;
+    transition-duration: 0.5s;
+}
 .windowsbutton:active {
     border-width: 1px;
-    background-color: #1f131d;
-    border-color: #EA81F9;
+    border-radius: 0px;
+    background-color: #CCE4F7;
+    border-color: #005499;
     border-style: solid;
     transition-duration: 0.5s;
 }
 .navbar {
     position: absolute;
     left: 0%;
-    top: 2px;
+    top: 0%;
     width: 100%;
     height: 22px;
     display: flex;
@@ -61,47 +63,48 @@ body {
 .nav_divisor1 {
     width: 1px;
     height: 100%;
-    background-color: #85448e7e;
+    background-color: #A0A0A0;
 }
-/* .nav_divisor2 {
+.nav_divisor2 {
     width: 1px;
     height: 100%;
     background-color: #FFFFFF;
-} */
+}
 
 .navbutton {
     border-width: 1px;
-    border-bottom-width: 0px;
-    border-top-right-radius: 8px;
-    border-top-left-radius: 8px;
-    background-color: rgb(14,0,14);
-    border-color: #85448E;
+    border-radius: 0px;
+    background-color: #F0F0F0;
+    border-color: #F0F0F0;
     border-style: solid;
     height: 20px;
-    transition-duration: 0.5s;
 }
-.navbutton:focus,
 .navbutton:hover {
-    background-color: rgb(36, 0, 36);
-    transition-duration: 0.5s;
+    border-width: 1px;
+    border-radius: 0px;
+    background-color: #F0F0F0;
+    border-style: outset;
+    border-color: #FFFFFF;
+    height: 20px;
+}
+.navbutton:focus {
     outline-style: none;
 }
 .navbutton:active {
-    background-color: #85448E;
-    transition-duration: 0.1s;
+    border-width: 2px;
+    border-radius: 0px;
+    background-color: #F0F0F0;
+    border-style: inset;
+    border-color: #FFFFFF;
+    height: 18px;
 }
 
 textarea,
-input[type=text]::placeholder {
-    color: #f0c0e3;
-    opacity: 0.5;
-}
-textarea,
 input[type=text] {
     border-width: 1px;
-    border-radius: 16px;
-    background-color: rgb(0,0,0,0);
-    border-color: #894793;
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    border-color: #CCCCCC;
     border-style: solid;
     transition-duration: 0.5s;
     resize: none;
@@ -109,9 +112,9 @@ input[type=text] {
 textarea,
 input[type=text]:hover {
     border-width: 1px;
-    border-radius: 32px;
-    background-color: #421931;
-    border-color: #ac457a;
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    border-color: #7A7A7A;
     border-style: solid;
     transition-duration: 0.5s;
     resize: none;
@@ -119,9 +122,9 @@ input[type=text]:hover {
 textarea,
 input[type=text]:focus {
     border-width: 1px;
-    border-radius: 32px;
-    background-color: #5a2243;
-    border-color: #ac457a;
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    border-color: #0078D7;
     border-style: solid;
     transition-duration: 0.5s;
     outline:unset;
@@ -130,8 +133,8 @@ input[type=text]:focus {
 
 .contentbox {
     border-width: 2px;
-    border-radius: 11px;
-    background-color: #442342;
-    border-style: solid;
-    border-color: #894793;
+    border-radius: 0px;
+    background-color: #F0F0F0;
+    border-style: inset;
+    border-color: #FFFFFF;
 }
