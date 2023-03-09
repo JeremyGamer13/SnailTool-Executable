@@ -4,7 +4,7 @@
         <link id="PageTheme_CSS" rel="stylesheet" href="../themes/dark.css">
     </head>
     <body>
-        <div style="display:none" id="DocumentHandleType">SaveEditor</div>
+        <div style="display:none" id="DocumentHandleType">Settings</div>
         <div class="navbar">
             <button id="Navbar_Home" class="navbutton" style="margin-left: 2px; margin-right: 4px;">Home</button>
             <div class="nav_divisor1"></div>
@@ -18,10 +18,17 @@
             <div class="nav_divisor1"></div>
         </div>
         <div class="belownav">
-            <p id="EditingLabel">Currently editing: None</p>
-            <button id="Save_Save"   class="windowsbutton">Save</button>
-            <button id="Save_SaveAs" class="windowsbutton">Save as</button>
-            <button id="Load_Load"   class="windowsbutton" style="margin-left: 16px;">Reload file</button>
+            <a style="font-size: large;">General</a>
+            <br><br>
+            <button class="windowsbutton">Reset default level path</button>
+            <p style="font-size: large;">Themes</p>
+            <p><input type="radio" name="themeOption" id="theme_dark"> Dark Theme</p>
+            <p><input type="radio" name="themeOption" id="theme_light"> Light Theme</p>
+            <br>
+            <p><input type="radio" name="themeOption" id="theme_custom"> Custom Theme</p>
+            <p>Custom Color: <input type="color" value="#ff00ff" id="theme_color"></p>
+            <br><br><br><br>
+            <button class="windowsbutton">Reset all Settings</button>
         </div>
     </body>
 </html>

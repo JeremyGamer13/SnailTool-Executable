@@ -9,6 +9,105 @@
 
     const MousePosition = { x: 0, y: 0 }
 
+    function hexToHsl(H) {
+        let r = 0, g = 0, b = 0;
+        if (H.length == 4) {
+            r = "0x" + H[1] + H[1];
+            g = "0x" + H[2] + H[2];
+            b = "0x" + H[3] + H[3];
+        } else if (H.length == 7) {
+            r = "0x" + H[1] + H[2];
+            g = "0x" + H[3] + H[4];
+            b = "0x" + H[5] + H[6];
+        }
+        // Then to HSL
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        let cmin = Math.min(r, g, b),
+            cmax = Math.max(r, g, b),
+            delta = cmax - cmin,
+            h = 0,
+            s = 0,
+            l = 0;
+
+        if (delta == 0)
+            h = 0;
+        else if (cmax == r)
+            h = ((g - b) / delta) % 6;
+        else if (cmax == g)
+            h = (b - r) / delta + 2;
+        else
+            h = (r - g) / delta + 4;
+
+        h = Math.round(h * 60);
+
+        if (h < 0)
+            h += 360;
+
+        l = (cmax + cmin) / 2;
+        s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+        s = +(s * 100).toFixed(1);
+        l = +(l * 100).toFixed(1);
+
+        return { h: h, s: s, l: l }
+    }
+    function hslToRgb(h, s, l) {
+        if (typeof h == "object") {
+            s = h.s
+            l = h.l
+            h = h.h
+        }
+        // Must be fractions of 1
+        s /= 100;
+        l /= 100;
+
+        let c = (1 - Math.abs(2 * l - 1)) * s,
+            x = c * (1 - Math.abs((h / 60) % 2 - 1)),
+            m = l - c / 2,
+            r = 0,
+            g = 0,
+            b = 0;
+
+        if (0 <= h && h < 60) {
+            r = c; g = x; b = 0;
+        } else if (60 <= h && h < 120) {
+            r = x; g = c; b = 0;
+        } else if (120 <= h && h < 180) {
+            r = 0; g = c; b = x;
+        } else if (180 <= h && h < 240) {
+            r = 0; g = x; b = c;
+        } else if (240 <= h && h < 300) {
+            r = x; g = 0; b = c;
+        } else if (300 <= h && h < 360) {
+            r = c; g = 0; b = x;
+        }
+        r = Math.round((r + m) * 255);
+        g = Math.round((g + m) * 255);
+        b = Math.round((b + m) * 255);
+
+        return { r: r, g: g, b: b };
+    }
+    function rgbToHex(r, g, b) {
+        if (typeof r == "object") {
+            g = r.g
+            b = r.b
+            r = r.r
+        }
+        r = r.toString(16);
+        g = g.toString(16);
+        b = b.toString(16);
+
+        if (r.length == 1)
+            r = "0" + r;
+        if (g.length == 1)
+            g = "0" + g;
+        if (b.length == 1)
+            b = "0" + b;
+
+        return "#" + r + g + b;
+    }
+
     let targetFile = null
     let backupFolder = null
     window.addEventListener("DOMContentLoaded", async () => {
@@ -35,6 +134,12 @@
                 await Util.SaveToMemory("TargetPath", targetFile.path)
             }
             Util.SwitchMenuFile("tools/leveleditor.html")
+        }
+        Util.GetById("Navbar_Settings").onclick = async () => {
+            if (targetFile) {
+                await Util.SaveToMemory("TargetPath", targetFile.path)
+            }
+            Util.SwitchMenuFile("tools/settings.html")
         }
         Util.GetById("Navbar_Credits").onclick = async () => {
             if (targetFile) {
@@ -760,6 +865,37 @@
                         }
                     })
                 })();
+                break
+            case "Settings":
+                const themeButtons = {
+                    dark: Util.GetById("theme_dark"),
+                    light: Util.GetById("theme_light"),
+                    custom: Util.GetById("theme_custom"),
+                }
+                const css = Util.GetById("PageTheme_CSS")
+                const colorPicker = Util.GetById("theme_color")
+                function setCustomColors(hex) {
+                    const color = hexToHsl(hex)
+                    const root = document.getElementsByTagName("html").item(0)
+                    root.style.setProperty('--custom-color', rgbToHex(hslToRgb(color.h, color.s, color.l)))
+                    root.style.setProperty('--custom-color-hover', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.5)))
+                    root.style.setProperty('--custom-color-content', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.2)))
+                    root.style.setProperty('--custom-color-dark', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.1)))
+                }
+                themeButtons.dark.onclick = () => {
+                    css.href = `../themes/dark.css`
+                }
+                themeButtons.light.onclick = () => {
+                    css.href = `../themes/light.css`
+                }
+                themeButtons.custom.onclick = () => {
+                    css.href = `../themes/custom.css`
+                    setCustomColors(colorPicker.value)
+                }
+                colorPicker.onchange = () => {
+                    if (!String(css.href).includes("custom")) return
+                    setCustomColors(colorPicker.value)
+                }
                 break
         }
     })
