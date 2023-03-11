@@ -6,6 +6,7 @@
     Util.SetRemoteHandler(ipcRenderer)
     const Converter = require("./converter.js")
     const Settings = require("./settings.js")
+    const ImageGenerator = require("./image.js")
 
     const MousePosition = { x: 0, y: 0 }
 
@@ -108,9 +109,60 @@
         return "#" + r + g + b;
     }
 
+    const CachedThemeData = {
+        type: "dark",
+        color: "#e2acd3"
+    }
+    function setColorTheme(page) {
+        function toggleTransitions(on) {
+            Util.GetAllElements().forEach(element => {
+                if (on) {
+                    element.style.removeProperty("transition")
+                    element.style.removeProperty("transition-duration")
+                    return
+                }
+                element.style.setProperty("transition", "none", "important")
+                element.style.setProperty("transition-duration", "0s", "important")
+            })
+        }
+        function setCustomColors(hex) {
+            const color = hexToHsl(hex)
+            const root = document.getElementsByTagName("html").item(0)
+            root.style.setProperty('--custom-color', rgbToHex(hslToRgb(color.h, color.s, color.l)))
+            root.style.setProperty('--custom-color-hover', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.35)))
+            root.style.setProperty('--custom-color-content', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.2)))
+            root.style.setProperty('--custom-color-dark', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.05)))
+        }
+        toggleTransitions(false)
+        const css = Util.GetById("PageTheme_CSS")
+        Settings.get("THEME_TYPE").then(themeType => Settings.get("THEME_COLOR").then(themeColor => {
+            if (themeType == null) themeType = "dark"
+            if (themeColor == null) themeColor = "#e2acd3"
+            CachedThemeData.type = themeType
+            CachedThemeData.color = themeColor
+            switch (page) {
+                case "HomePage":
+                    css.href = `themes/${themeType}.css`
+                    setCustomColors(themeColor)
+                    break
+                default:
+                    css.href = `../themes/${themeType}.css`
+                    setCustomColors(themeColor)
+                    break
+            }
+            setTimeout(() => {
+                toggleTransitions(true)
+            }, 50);
+        }))
+    }
+
     let targetFile = null
     let backupFolder = null
+
     window.addEventListener("DOMContentLoaded", async () => {
+        const DocumentType = Util.GetById("DocumentHandleType").innerHTML
+
+        setColorTheme(DocumentType)
         window.onmousemove = e => {
             MousePosition.x = e.x
             MousePosition.y = e.y
@@ -148,7 +200,6 @@
             Util.SwitchMenuFile("tools/credits.html")
         }
 
-        const DocumentType = Util.GetById("DocumentHandleType").innerHTML
         console.log("loading", DocumentType, "scripts")
         switch (DocumentType) {
             case "HomePage":
@@ -506,6 +557,62 @@
                             Util.PCall(function () { Util.SetWindowProgress(-1) })
                         })
                     }
+                    const ThumbnailGeneratorButton = Util.GetById("GenerateThumbnail")
+                    ThumbnailGeneratorButton.onclick = () => {
+                        Util.GrabFile(targetFile.path).then(file => {
+                            Util.PCall(function () { Util.SetWindowProgress(0.5) })
+                            const data = file.content
+                            if (!Converter.IsWYSLevelFile(data)) {
+                                Util.DisplayMessage({
+                                    type: "error",
+                                    buttons: ["OK"],
+                                    title: "Error",
+                                    message: "Failed to generate image.",
+                                    detail: "The provided file is not a Snailax or Level editor level. Please pick one and try again.",
+                                    normalizeAccessKeys: true
+                                })
+                                Util.PCall(function () { Util.SetWindowProgress(-1) })
+                                return
+                            }
+                            const jsonInput = (Converter.IsLevelEditor(data) ? Converter.LevelEditorToJSON(data) : Converter.SnailaxToJSON(data))
+                            const generator = new ImageGenerator()
+                            generator.attachEventFunction("OBJECTADD", (index, max, objectName) => {
+                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Placed ${index}/${max} ${objectName}s`
+                            })
+                            generator.attachEventFunction("WIREADD", (index, max) => {
+                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Placed ${index}/${max} wires`
+                            })
+                            generator.attachEventFunction("BUFFERGEN", () => {
+                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Generating base image`
+                            })
+                            generator.attachEventFunction("GLOWGEN", () => {
+                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Generating effects, this may take a while`
+                            })
+                            generator.attachEventFunction("ERROR", (err, extra) => {
+                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - !! ${extra}; ${err} !!`
+                            })
+                            generator.attachEventFunction("FINISHED", () => {
+                                ThumbnailGeneratorButton.innerText = `Generate thumbnail`
+                            })
+                            generator.createLevelPreview(jsonInput).then(imageBuffer => {
+                                Util.PCall(function () { Util.SetWindowProgress(-1) })
+                                Util.AskToSaveFile(imageBuffer, String(file.name).split(".")[0] + ".png", [
+                                    { name: 'Level Preview Image', extensions: ['png'] }
+                                ])
+                            }).catch(err => {
+                                Util.PCall(function () { Util.SetWindowProgress(-1) })
+                                console.error(err)
+                                Util.DisplayMessage({
+                                    type: "error",
+                                    buttons: ["OK"],
+                                    title: "Error",
+                                    message: "Failed to generate image.",
+                                    detail: String(err),
+                                    normalizeAccessKeys: true
+                                })
+                            })
+                        })
+                    }
                 })();
                 break
             case "LevelEditor":
@@ -764,7 +871,7 @@
                     }
                     function UpdateToolDetails() {
                         Util.GetById("Details_ToolIcon").src = GetImageOfTile(currentTool.name)
-                        Util.GetById("Details_ToolName").innerText = String(currentTool.name)
+                        Util.GetById("Details_ToolIcon").title = String(currentTool.name)
                         const propertyMenu = Util.GetById("Details_ToolProperties")
                         propertyMenu.innerHTML = ""
                         currentTool.properties.forEach(property => {
@@ -850,6 +957,14 @@
                             ToolPlacementElements.rotation.degrees.value = currentTool.direction
                         }
                     })
+                    const ViewportFrame = Util.GetById("LevelContents")
+                    const ViewportZoomElement = Util.GetById("Viewport_Zoom")
+                    ViewportZoomElement.onchange = () => {
+                        const zoom = Number(ViewportZoomElement.value) / 100
+                        ViewportFrame.style.width = (640 / zoom) + "px"
+                        ViewportFrame.style.height = (360 / zoom) + "px"
+                        ViewportFrame.style.transform = `scale(${zoom})`
+                    }
                 })();
                 break
             case "SaveEditor":
@@ -867,35 +982,55 @@
                 })();
                 break
             case "Settings":
+                const buttons = {
+                    resetAll: Util.GetById("SettingsReset_All"),
+                    resetPath: Util.GetById("SettingsReset_LevelPath"),
+                }
                 const themeButtons = {
                     dark: Util.GetById("theme_dark"),
                     light: Util.GetById("theme_light"),
                     custom: Util.GetById("theme_custom"),
                 }
-                const css = Util.GetById("PageTheme_CSS")
                 const colorPicker = Util.GetById("theme_color")
-                function setCustomColors(hex) {
-                    const color = hexToHsl(hex)
-                    const root = document.getElementsByTagName("html").item(0)
-                    root.style.setProperty('--custom-color', rgbToHex(hslToRgb(color.h, color.s, color.l)))
-                    root.style.setProperty('--custom-color-hover', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.5)))
-                    root.style.setProperty('--custom-color-content', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.2)))
-                    root.style.setProperty('--custom-color-dark', rgbToHex(hslToRgb(color.h, color.s, color.l * 0.1)))
-                }
                 themeButtons.dark.onclick = () => {
-                    css.href = `../themes/dark.css`
+                    Settings.set("THEME_TYPE", "dark").then(() => {
+                        setColorTheme(DocumentType)
+                    })
                 }
                 themeButtons.light.onclick = () => {
-                    css.href = `../themes/light.css`
+                    Settings.set("THEME_TYPE", "light").then(() => {
+                        setColorTheme(DocumentType)
+                    })
                 }
                 themeButtons.custom.onclick = () => {
-                    css.href = `../themes/custom.css`
-                    setCustomColors(colorPicker.value)
+                    Settings.set("THEME_TYPE", "custom").then(() => {
+                        Settings.set("THEME_COLOR", colorPicker.value).then(() => {
+                            setColorTheme(DocumentType)
+                        })
+                    })
                 }
                 colorPicker.onchange = () => {
-                    if (!String(css.href).includes("custom")) return
-                    setCustomColors(colorPicker.value)
+                    Settings.set("THEME_COLOR", colorPicker.value).then(() => {
+                        setColorTheme(DocumentType)
+                    })
                 }
+
+                buttons.resetAll.onclick = () => {
+                    const uSureBro = confirm("This will reset ALL saved settings. Continue?")
+                    if (!uSureBro) return
+                    Settings.reset().then(() => {
+                        Util.SwitchMenuFile("index.html")
+                    })
+                }
+                buttons.resetPath.onclick = () => {
+                    const uSureBro = confirm("Reset the default level path?")
+                    if (!uSureBro) return
+                    Settings.remove("LEVELPATH")
+                }
+
+                // load settings values
+                Settings.get("THEME_TYPE").then(type => { themeButtons[type].checked = true })
+                Settings.get("THEME_COLOR").then(color => { colorPicker.value = color })
                 break
         }
     })

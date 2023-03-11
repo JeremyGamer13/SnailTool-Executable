@@ -46,6 +46,13 @@ class Util {
         return output
     }
 
+    static SynchronousForEach = (array, cb) => {
+        for (let i = 0; i < array.length; i++) {
+            const element = array[i]
+            cb(element)
+        }
+    }
+
     static AddDocumentCore = (name, object) => {
         document[name] = object
     }
@@ -105,6 +112,9 @@ class Util {
             object[element.name] = element.value
         }
         return object
+    }
+    static GetAllElements = () => {
+        return Util.HTMLCollectionToArray(document.body.getElementsByTagName('*'))
     }
     static ConvertTag = (element, tag) => {
         const NewParent = Util.CreateElement(tag)
@@ -393,6 +403,7 @@ class Util {
         }
     }
     static AskToSaveFile = (data, defaultName, filter) => {
+        const isBuffer = Buffer.isBuffer(data)
         try {
             return new Promise((resolve, reject) => {
                 Util.RemoteRequest("showSaveDialog", JSON.stringify({
@@ -403,6 +414,15 @@ class Util {
                 })).then(result => {
                     if (result.canceled) return reject("NotSelected")
                     Util.PCall(function () { Util.SetWindowProgress(0.5) })
+                    if (isBuffer) {
+                        fs.writeFile(result.filePath, data, err => {
+                            Util.PCall(function () { Util.SetWindowProgress(-1) })
+                            if (err) {
+                                return reject(err)
+                            }
+                            resolve()
+                        })
+                    }
                     fs.writeFile(result.filePath, data, "utf8", err => {
                         Util.PCall(function () { Util.SetWindowProgress(-1) })
                         if (err) {

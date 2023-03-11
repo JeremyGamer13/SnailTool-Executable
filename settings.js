@@ -58,6 +58,28 @@ class Settings {
             })
         })
     }
+    static remove(key) {
+        return new Promise((resolve, reject) => {
+            Settings.fileExists().then(exists => {
+                if (!exists) {
+                    Settings.reset()
+                    resolve()
+                } else {
+                    fs.readFile(Settings.filePath, "utf8", (err, data) => {
+                        if (err) return reject(err)
+                        const fileData = Util.IsJson(data) ? JSON.parse(data) : {}
+                        if (fileData.hasOwnProperty(key)) {
+                            delete fileData[key]
+                        }
+                        fs.writeFile(Settings.filePath, JSON.stringify(fileData), "utf8", err => {
+                            if (err) return reject(err)
+                            resolve()
+                        })
+                    })
+                }
+            })
+        })
+    }
 }
 
 module.exports = Settings

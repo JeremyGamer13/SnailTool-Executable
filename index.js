@@ -1,7 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain, Tray } = require('electron')
 const path = require('path')
 
-const IsDeveloperMode = false
+const IsDeveloperMode = true
 
 function createWindow() {
     const win = new BrowserWindow({

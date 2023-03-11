@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link id="PageTheme_CSS" rel="stylesheet" href="../themes/dark.css">
+        <link id="PageTheme_CSS" rel="stylesheet" href="../themes/notloaded.css">
     </head>
     <body>
         <div style="display:none" id="DocumentHandleType">Settings</div>
@@ -20,15 +20,15 @@
         <div class="belownav">
             <a style="font-size: large;">General</a>
             <br><br>
-            <button class="windowsbutton">Reset default level path</button>
+            <button class="windowsbutton" id="SettingsReset_LevelPath">Reset default level path</button>
             <p style="font-size: large;">Themes</p>
             <p><input type="radio" name="themeOption" id="theme_dark"> Dark Theme</p>
             <p><input type="radio" name="themeOption" id="theme_light"> Light Theme</p>
             <br>
             <p><input type="radio" name="themeOption" id="theme_custom"> Custom Theme</p>
-            <p>Custom Color: <input type="color" value="#ff00ff" id="theme_color"></p>
+            <p>Custom Color: <input type="color" value="#e2acd3" id="theme_color"></p>
             <br><br><br><br>
-            <button class="windowsbutton">Reset all Settings</button>
+            <button class="windowsbutton" id="SettingsReset_All">Reset all Settings</button>
         </div>
     </body>
 </html>

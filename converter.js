@@ -127,8 +127,8 @@ class Converter {
         delete_tool: null,
     }
     static LevelJSONFormat = {
-        version: "1.5", // game version will always be latest level editor version no matter the snail or the ax
-        snailaxVersion: "5", // snailax version for reasons
+        version: "0",        // versions are set to 0 so you can check which version is 0 to get what the level originally was
+        snailaxVersion: "0", // versions are set to 0 so you can check which version is 0 to get what the level originally was
         objects: {
             player: [
                 // {
@@ -649,6 +649,31 @@ class Converter {
     static LevelEditorToSnailax = (leveleditor) => {
         const converted = Converter.LevelEditorToJSON(leveleditor)
         return Converter.JSONToSnailax(converted)
+    }
+
+    static IsLevelEditor = (data) => {
+        if (typeof data == "object") {
+            return data.version != "0"
+        }
+        return String(data).replace(/[\r ]*/gmi, "").split("\n").slice(0, 6).includes("LEVELDIMENSIONS:")
+    }
+    static IsSnailax = (data) => {
+        if (typeof data == "object") {
+            return data.snailaxVersion != "0"
+        }
+        function isAllTrue(array) {
+            let trues = 0
+            for (let i = 0; i < array.length; i++) {
+                const element = array[i]
+                if (element == true) trues += 1
+            }
+            return trues == array.length
+        }
+        return isAllTrue(String(data).replace(/[\r ]*/gmi, "").split("\n").slice(0, 5).map(val => { return !isNaN(Number(val)) }))
+    }
+
+    static IsWYSLevelFile = (data) => {
+        return (Converter.IsSnailax(data) || Converter.IsLevelEditor(data))
     }
 }
 

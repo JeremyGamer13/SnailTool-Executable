@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link id="PageTheme_CSS" rel="stylesheet" href="../themes/dark.css">
+        <link id="PageTheme_CSS" rel="stylesheet" href="../themes/notloaded.css">
     </head>
     <body>
         <div style="display:none" id="DocumentHandleType">LevelEditor</div>
@@ -24,12 +24,17 @@
             <button id="Load_Load"   class="windowsbutton" style="margin-left: 16px;">Reload file</button>
             <br><br>
             <div style="display:flex">
-                <div id="LevelContentHolder" class="contentbox" style="width: 640px; height: 360px; overflow: auto; background: radial-gradient(circle, rgba(46,0,28,1) 50%, rgba(0,0,0,1) 100%);">
-                    <div id="LevelContents" style="overflow: auto; position: relative; height: 100%;"></div>
+                <div id="LevelContentHolder" class="contentbox" style="width: 640px; height: 360px; overflow: hidden; background: radial-gradient(circle, rgba(46,0,28,1) 50%, rgba(0,0,0,1) 100%);">
+                    <div id="LevelContents" style="overflow: auto; position: relative; height: 100%; transform-origin: left top;"></div>
                 </div>
                 <div style="margin-left:4px">
-                    <a>Options & Details</a>
-                    <br><br>
+                    <a style="font-weight: bold; display: flex; align-items: center; justify-content: center;">General</a>
+                    <br>
+                    <a style="display: flex; align-items: center;">Viewport Zoom <input id="Viewport_Zoom" type="range" value="100" min="25" max="200" style="margin-left: 8px;"></a>
+                    
+                    <br>
+                    <a style="font-weight: bold; display: flex; align-items: center; justify-content: center;">Options & Details</a>
+                    <br>
                     <a>Object placement alignment</a>
                     <input id="Details_AlignmentX" type="text" value="60" placeholder="Alignment X">
                     <input id="Details_AlignmentY" type="text" value="60" placeholder="Alignment Y">
@@ -41,16 +46,12 @@
                     <a>Object rotation</a>
                     <input id="Details_RotationDegrees" type="text" value="0" placeholder="Rotation in degrees (CCW)">
                     <input id="Details_RotationAmount" type="text" value="" placeholder="Rotation amount (E key)">
-                    <br>
-                    <a>Currently selected tool</a>
-                    <br>
-                    <img id="Details_ToolIcon" width="64" height="64" src="../images/objects/unknown.png" draggable="false" style="object-fit: contain;">
-                    <br>
-                    <a id="Details_ToolName">No tool (not placeable)</a>
                     <br><br>
-                    <a>Tool Properties:</a>
+                    <div style="display: flex; align-items: center; justify-content: center;">
+                        <img id="Details_ToolIcon" width="64" height="64" src="../images/objects/unknown.png" draggable="false" style="object-fit: contain;">
+                    </div>
                     <br>
-                    <div id="Details_ToolProperties" class="contentbox" style="width: 100%; height: 120px; overflow: auto;"></div>
+                    <div id="Details_ToolProperties" class="contentbox" style="width: 100%; height: 100px; overflow: auto;"></div>
                 </div>
             </div>
             <p>Tools</p>
