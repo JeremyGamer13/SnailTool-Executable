@@ -1,3 +1,4 @@
+![SnailTool Logo](https://github.com/JeremyGamer13/SnailTool-Executable/raw/main/images/logo.png)
 # SnailTool
 A program to quickly edit and convert Will You Snail content.
 
