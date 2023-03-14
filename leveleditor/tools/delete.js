@@ -9,7 +9,7 @@ class DeleteTool {
     static OnUnequip() {
 
     }
-    static OnTileClick(tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex, index, img, editLevelData) {
+    static OnTileClick(toolInheritedData, tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex, index, img, editLevelData) {
         if (addToData == false) {
             editLevelData.objects[tile].splice(objIndex, 1)
         } else {

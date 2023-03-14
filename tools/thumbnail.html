@@ -4,7 +4,7 @@
         <link id="PageTheme_CSS" rel="stylesheet" href="../themes/notloaded.css">
     </head>
     <body>
-        <div style="display:none" id="DocumentHandleType">SaveEditor</div>
+        <div style="display:none" id="DocumentHandleType">Thumbnail</div>
         <div class="navbar">
             <button id="Navbar_Home" class="navbutton" style="margin-left: 2px; margin-right: 4px;">Home</button>
             <div class="nav_divisor1"></div>
@@ -19,11 +19,18 @@
             <button id="Navbar_Credits" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Credits</button>
             <div class="nav_divisor1"></div>
         </div>
-        <div class="belownav">
+        <div class="belownav" style="overflow: auto;">
             <p id="EditingLabel">Currently editing: None</p>
             <button id="Save_Save"   class="windowsbutton">Save</button>
-            <button id="Save_SaveAs" class="windowsbutton">Save as</button>
             <button id="Load_Load"   class="windowsbutton" style="margin-left: 16px;">Reload file</button>
+            <div style="display: flex; flex-direction: column; align-content: center; align-items: center;">
+                <p style="font-weight: bold;">Generated image</p>
+                <div style="width: 960px; height: 540px; overflow: auto;">
+                    <img id="ImageDisplay" alt="??" src="../images/imagegenerator/default.png">
+                </div>
+                <button class="windowsbutton" id="GenerateThumbnail">Generate thumbnail</button>
+            </div>
+            <div style="height: 64px;"></div>
         </div>
     </body>
 </html>

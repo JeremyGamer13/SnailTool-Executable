@@ -176,6 +176,12 @@
             }
             Util.SwitchMenuFile("index.html")
         }
+        Util.GetById("Navbar_Thumbnail").onclick = async () => {
+            if (targetFile) {
+                await Util.SaveToMemory("TargetPath", targetFile.path)
+            }
+            Util.SwitchMenuFile("tools/thumbnail.html")
+        }
         Util.GetById("Navbar_Savedit").onclick = async () => {
             if (targetFile) {
                 await Util.SaveToMemory("TargetPath", targetFile.path)
@@ -558,63 +564,90 @@
                             Util.PCall(function () { Util.SetWindowProgress(-1) })
                         })
                     }
-                    const ThumbnailGeneratorButton = Util.GetById("GenerateThumbnail")
-                    ThumbnailGeneratorButton.onclick = () => {
-                        Util.GrabFile(targetFile.path).then(file => {
-                            Util.PCall(function () { Util.SetWindowProgress(0.5) })
-                            const data = file.content
-                            if (!Converter.IsWYSLevelFile(data)) {
-                                Util.DisplayMessage({
-                                    type: "error",
-                                    buttons: ["OK"],
-                                    title: "Error",
-                                    message: "Failed to generate image.",
-                                    detail: "The provided file is not a Snailax or Level editor level. Please pick one and try again.",
-                                    normalizeAccessKeys: true
-                                })
-                                Util.PCall(function () { Util.SetWindowProgress(-1) })
-                                return
-                            }
-                            const jsonInput = (Converter.IsLevelEditor(data) ? Converter.LevelEditorToJSON(data) : Converter.SnailaxToJSON(data))
-                            const generator = new ImageGenerator()
-                            generator.attachEventFunction("OBJECTADD", (index, max, objectName) => {
-                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Placed ${index}/${max} ${objectName}s`
+                })();
+                break
+            case "Thumbnail":
+                let CurrentImage = null
+                const ImageDisplayArea = Util.GetById("ImageDisplay")
+                function DisplayImage() {
+                    if (!CurrentImage) {
+                        ImageDisplayArea.src = "../images/imagegenerator/default.png"
+                        return
+                    }
+                    ImageDisplayArea.src = "data:image/png;base64," + CurrentImage.toString("base64")
+                }
+                Util.GetById("Save_Save").onclick = () => {
+                    if (!CurrentImage) return alert("No image has have been generated yet.")
+                    Util.AskToSaveFile(CurrentImage, String(file.name).split(".")[0] + ".png", [
+                        { name: 'Level Preview Image', extensions: ['png'] }
+                    ])
+                }
+                const ThumbnailGeneratorButton = Util.GetById("GenerateThumbnail")
+                ThumbnailGeneratorButton.onclick = () => {
+                    Util.GrabFile(targetFile.path).then(file => {
+                        Util.PCall(function () { Util.SetWindowProgress(0.5) })
+                        const data = file.content
+                        if (!Converter.IsWYSLevelFile(data)) {
+                            Util.DisplayMessage({
+                                type: "error",
+                                buttons: ["OK"],
+                                title: "Error",
+                                message: "Failed to generate image.",
+                                detail: "The provided file is not a Snailax or Level editor level. Please pick one and try again.",
+                                normalizeAccessKeys: true
                             })
-                            generator.attachEventFunction("WIREADD", (index, max) => {
-                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Placed ${index}/${max} wires`
+                            Util.PCall(function () { Util.SetWindowProgress(-1) })
+                            return
+                        }
+                        const jsonInput = (Converter.IsLevelEditor(data) ? Converter.LevelEditorToJSON(data) : Converter.SnailaxToJSON(data))
+                        const generator = new ImageGenerator()
+                        generator.attachEventFunction("OBJECTADD", (index, max, objectName) => {
+                            ThumbnailGeneratorButton.innerText = `Generate thumbnail - Placed ${index}/${max} ${objectName}s`
+                        })
+                        generator.attachEventFunction("WIREADD", (index, max) => {
+                            ThumbnailGeneratorButton.innerText = `Generate thumbnail - Placed ${index}/${max} wires`
+                        })
+                        generator.attachEventFunction("BUFFERGEN", () => {
+                            ThumbnailGeneratorButton.innerText = `Generate thumbnail - Generating base image`
+                        })
+                        generator.attachEventFunction("GLOWGEN", () => {
+                            ThumbnailGeneratorButton.innerText = `Generate thumbnail - Generating effects, this may take a while`
+                        })
+                        generator.attachEventFunction("ERROR", (err, extra) => {
+                            ThumbnailGeneratorButton.innerText = `Generate thumbnail - !! ${extra}; ${err} !!`
+                        })
+                        generator.attachEventFunction("FINISHED", () => {
+                            ThumbnailGeneratorButton.innerText = `Generate thumbnail`
+                        })
+                        generator.createLevelPreview(jsonInput).then(imageBuffer => {
+                            CurrentImage = imageBuffer
+                            DisplayImage()
+                            Util.PCall(function () { Util.SetWindowProgress(-1) })
+                        }).catch(err => {
+                            Util.PCall(function () { Util.SetWindowProgress(-1) })
+                            console.error(err)
+                            Util.DisplayMessage({
+                                type: "error",
+                                buttons: ["OK"],
+                                title: "Error",
+                                message: "Failed to generate image.",
+                                detail: String(err),
+                                normalizeAccessKeys: true
                             })
-                            generator.attachEventFunction("BUFFERGEN", () => {
-                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Generating base image`
-                            })
-                            generator.attachEventFunction("GLOWGEN", () => {
-                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - Generating effects, this may take a while`
-                            })
-                            generator.attachEventFunction("ERROR", (err, extra) => {
-                                ThumbnailGeneratorButton.innerText = `Generate thumbnail - !! ${extra}; ${err} !!`
-                            })
-                            generator.attachEventFunction("FINISHED", () => {
-                                ThumbnailGeneratorButton.innerText = `Generate thumbnail`
-                            })
-                            generator.createLevelPreview(jsonInput).then(imageBuffer => {
-                                Util.PCall(function () { Util.SetWindowProgress(-1) })
-                                Util.AskToSaveFile(imageBuffer, String(file.name).split(".")[0] + ".png", [
-                                    { name: 'Level Preview Image', extensions: ['png'] }
-                                ])
-                            }).catch(err => {
-                                Util.PCall(function () { Util.SetWindowProgress(-1) })
-                                console.error(err)
-                                Util.DisplayMessage({
-                                    type: "error",
-                                    buttons: ["OK"],
-                                    title: "Error",
-                                    message: "Failed to generate image.",
-                                    detail: String(err),
-                                    normalizeAccessKeys: true
-                                })
+                        })
+                    })
+                }
+
+                Util.ExistsInMemory("TargetPath").then(async exists => {
+                    if (exists) {
+                        Util.GetFromMemory("TargetPath").then(async path => {
+                            Util.GrabFile(path).then(async file => {
+                                targetFile = file
+                                Util.GetById("EditingLabel").innerText = "Currently editing: " + targetFile.path
                             })
                         })
                     }
-                })();
+                })
                 break
             case "LevelEditor":
                 LevelEditor.LoadTools()

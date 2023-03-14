@@ -86,9 +86,10 @@ class ImageGenerator {
         return new Promise((resolve, reject) => {
             const distance = ImageGenerator.getDistance(x, y, dx, dy)
             const rotation = ImageGenerator.directionFromTo(x, y, dx, dy)
-            new Jimp(distance, 3, color, (err, image) => {
+            new Jimp(distance, 2, color, (err, image) => {
                 if (err) return reject(err)
-                image.rotate(rotation)
+                image.background(0x00000000)
+                image.rotate(rotation, true)
                 resolve(image)
             })
         })
@@ -147,7 +148,7 @@ class ImageGenerator {
                         }
                         // console.log(image)
                         Util.PCall(() => {
-                            image.resize(placementDetails.scale.x, placementDetails.scale.y)
+                            image.resize(placementDetails.scale.x, placementDetails.scale.y, Jimp.RESIZE_NEAREST_NEIGHBOR)
                             image.rotate(placementDetails.rotation)
                             baseImage.blit(image, placementDetails.position.x, placementDetails.position.y)
                             this.fireEvent("OBJECTADD", i + 1, objects[objectName].length, objectName)

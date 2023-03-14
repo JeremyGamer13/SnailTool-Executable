@@ -38,6 +38,14 @@ class LevelEditor {
         if (!customTools) return
         if (customTools.length <= 0) return
     }
+    static CreateToolDependencies(key, value) {
+        Object.getOwnPropertyNames(LevelEditor.ImportedTools).forEach(toolName => {
+            const module = LevelEditor.ImportedTools[toolName]
+            if (!module.Dependencies) return
+            if (!module.Dependencies.includes(key)) return
+            module.LoadedDependencies[key] = value
+        })
+    }
 
     static GetTileRotationAnchor(tile) {
         switch (tile) {
@@ -120,7 +128,7 @@ class LevelEditor {
         })
         let editLevelData = Converter.CloneMainJSONFormat()
         // let editLevelData = Converter.LevelJSONFormat
-        function CreateObject(tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex) {
+        function CreateObject(toolInheritedData, tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex) {
             const scaleAndOffset = LevelEditor.GetTileVisualData(tile)
             let index = 0
             if (addToData != false) {
@@ -154,7 +162,7 @@ class LevelEditor {
                     if (!currentTool) return
                     const module = LevelEditor.ImportedTools[currentTool.name]
                     if (module) {
-                        if (module.OnTileClick) module.OnTileClick(tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex, index, img, editLevelData)
+                        if (module.OnTileClick) module.OnTileClick(toolInheritedData, tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex, index, img, editLevelData)
                     }
                     // focusedObject = img
                 }
@@ -182,6 +190,7 @@ class LevelEditor {
                     const objectnam = (Converter.SnailaxLevelEditorEquivalents[objectName] != null ? Converter.SnailaxLevelEditorEquivalents[objectName] : objectName)
                     //if (objectnam.endsWith("antenna")) console.log(object.properties, Number(Converter.GetProperty("coru", object.properties)) == 1)
                     CreateObject(
+                        object,
                         objectnam,
                         object.position.x,
                         object.position.y,
@@ -220,6 +229,14 @@ class LevelEditor {
                     return alert("Level save failed; " + err)
                 }
                 alert("Saved level!")
+            })
+        }
+        Util.GetById("Save_SaveAs").onclick = () => {
+            const levelData = Converter.JSONToLevelEditor(editLevelData)
+            console.log(levelData)
+            Util.PCall(function () { Util.SetWindowProgress(0.5) })
+            Util.AskToSaveFile(levelData, String(targetFile.name)).finally(() => {
+                Util.PCall(function () { Util.SetWindowProgress(-1) })
             })
         }
         Util.GetById("Load_Load").onclick = () => {
@@ -357,7 +374,28 @@ class LevelEditor {
                 }
             }
         })
+        let CanActivateBackgroundClick = true
+        LevelEditor.CreateToolDependencies("SwitchObject", (toolName, data) => {
+            let toolData = null
+            if (data != null) {
+                toolData = data
+                toolData.name = toolName
+            } else {
+                toolData = Converter.CloneMainJSONFormat().toolData[toolName]
+                toolData.name = toolName
+            }
+            currentTool = toolData
+            UpdateToolDetails()
+            console.log("switched tool", toolData)
+        })
+        LevelEditor.CreateToolDependencies("SkipPlaceTick", () => {
+            CanActivateBackgroundClick = false
+        })
         TileHolder.onclick = (e) => {
+            if (!CanActivateBackgroundClick) {
+                CanActivateBackgroundClick = true
+                return
+            }
             if (!currentTool) return
             const module = LevelEditor.ImportedTools[currentTool.name]
             if (module) {
@@ -376,6 +414,7 @@ class LevelEditor {
             const y = (gridSize.y == 0 ? _y : (gridSize.y * Math.round(_y / gridSize.y)))
             const corrupted = Number(Converter.GetProperty("coru", currentTool.properties)) == 1
             CreateObject(
+                currentTool,
                 currentTool.name,
                 x,
                 y,
