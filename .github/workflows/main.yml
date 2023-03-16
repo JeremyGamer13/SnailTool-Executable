@@ -1,3 +1,40 @@
+inputs:
+  macos-cert-importer:
+    description: 'Path to script used to import the macOS P12 certificate used to sign the app.'
+    default: '$GITHUB_ACTION_PATH/scripts/import-macos-cert.sh'
+    required: false
+  macos-cert-p12:
+    description: 'The base64-encoded contents of the macOS P12 certificate used to sign the app. Used by the default `macos-cert-importer` script.'
+    required: false
+  macos-cert-password:
+    description: 'The password used to unlock the signing certificate so that it can be imported into the keychain.'
+    required: false
+  node-installer:
+    description: 'Which Node.js package manager to use (`yarn` or `npm`). Defaults to detecting which package manager was used on the app via `yarn-or-npm` (which is used by Electron Forge).'
+    required: false
+  target-arch:
+    description: 'The target architecture for the Electron app distributable.'
+    required: false
+  target-maker:
+    description: 'The target Electron Forge maker module which generates the distributable artifacts. For example, @electron-forge/maker-deb'
+    required: true
+  target-platform:
+    description: 'The target platform for the Electron app distributable.'
+    required: true
+  windows-cert-filename:
+    description: 'Path to the PFX certificate generated from the windows-cert-p12 input. Provided to a JavaScript-based Forge config as `process.env.WINDOWS_CERT_FILENAME`.'
+    default: 'windows-certificate.pfx'
+  windows-cert-importer:
+    description: 'Path to script used to import the macOS P12 certificate used to sign the app.'
+    default: 'node $GITHUB_ACTION_PATH/scripts/import-windows-cert.js'
+    required: false
+  windows-cert-p12:
+    description: 'The base64-encoded contents of the Windows P12 certificate used to sign the app for Squirrel and AppX makers. Used by the default `windows-cert-importer` script.'
+    required: false
+  windows-cert-password:
+    description: 'The password used to unlock the signing certificate so that it can sign the distributables. Provided to a JavaScript-based Forge config as `process.env.WINDOWS_CERT_PASSWORD`.'
+    required: false
+
 on:
   workflow_dispatch:
   push:
@@ -8,14 +45,35 @@ jobs:
     name: packageapp
     runs-on: windows-latest
     steps:
-      - name: electronforge
-        uses: yinxulai/actions-electron-forge@0.05
-        with:
-          # GitHub authentication token
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Directory where NPM/Yarn commands should be run
-          package_root: .
-          # Optional package.json scripts name
-          script_name: make
-          # Whether the app should be released after a successful build
-          release: true
+      - name: Install platform dependencies
+        shell: bash
+        run: $GITHUB_ACTION_PATH/scripts/platform-dependencies.sh
+        env:
+          TARGET_MAKER: ${{ inputs.target-maker }}
+      - name: Install Node.js dependencies
+        shell: bash
+        run: $GITHUB_ACTION_PATH/scripts/install.sh
+        env:
+          NODE_INSTALLER: ${{ inputs.node-installer }}
+      - name: Set up macOS signing certificate
+        shell: bash
+        run: ${{ inputs.macos-cert-importer }}
+        env:
+          MACOS_CERT_PASSWORD: ${{ inputs.macos-cert-password }}
+          MACOS_CERT_P12: ${{ inputs.macos-cert-p12 }}
+      - name: Set up Windows signing certificate
+        shell: bash
+        run: ${{ inputs.windows-cert-importer }}
+        env:
+          WINDOWS_CERT_FILENAME: ${{ inputs.windows-cert-filename }}
+          WINDOWS_CERT_P12: ${{ inputs.windows-cert-p12 }}
+      - name: Create app distributable
+        shell: bash
+        run: $GITHUB_ACTION_PATH/scripts/make.sh
+        env:
+          NODE_INSTALLER: ${{ inputs.node-installer }}
+          TARGET_ARCH: ${{ inputs.target-arch }}
+          TARGET_MAKER: ${{ inputs.target-maker }}
+          TARGET_PLATFORM: ${{ inputs.target-platform }}
+          WINDOWS_CERT_FILENAME: ${{ inputs.windows-cert-filename }}
+          WINDOWS_CERT_PASSWORD: ${{ inputs.windows-cert-password }}
