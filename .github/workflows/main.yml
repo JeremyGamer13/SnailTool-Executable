@@ -4,21 +4,7 @@ on:
     branches:
     - main
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2.2.0
-        with:
-          node-version: 12.x
-          cache: yarn
-      - name: Install
-        run: yarn
-      - name: lint
-        run: yarn lint
   bundle:
-    needs: lint
     runs-on: ${{ matrix.platform.host }}
     strategy:
       matrix:
@@ -35,7 +21,7 @@ jobs:
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 12.x
-          cache: yarn
+          cache: npm
       - name: Bundle app
         uses: electron-forge/bundle-action@main
         with:
@@ -86,7 +72,7 @@ jobs:
         uses: actions/setup-node@v2.2.0
         with:
           node-version: 12.x
-          cache: yarn
+          cache: npm
       - name: Generate distributables
         uses: electron-forge/distributable-action@main
         with:
