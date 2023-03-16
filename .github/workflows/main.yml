@@ -8,7 +8,7 @@ jobs:
     name: packageapp
     runs-on: windows-latest
     steps:
-      - name: Electron Forge Action
+      - name: electronforge
         uses: yinxulai/actions-electron-forge@0.05
         with:
           # GitHub authentication token
