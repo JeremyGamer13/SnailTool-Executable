@@ -1,0 +1,21 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
+jobs:
+  createdistribution:
+    name: packageapp
+    runs-on: windows-latest
+    steps:
+      - name: Electron Forge Action
+        uses: yinxulai/actions-electron-forge@0.05
+        with:
+          # GitHub authentication token
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Directory where NPM/Yarn commands should be run
+          package_root: .
+          # Optional package.json scripts name
+          script_name: make
+          # Whether the app should be released after a successful build
+          release: true
