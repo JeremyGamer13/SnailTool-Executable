@@ -163,49 +163,34 @@
     window.addEventListener("DOMContentLoaded", async () => {
         const DocumentType = Util.GetById("DocumentHandleType").innerHTML
 
-        setColorTheme(DocumentType)
         window.onmousemove = e => {
             MousePosition.x = e.x
             MousePosition.y = e.y
         }
 
-        // different menus
-        Util.GetById("Navbar_Home").onclick = async () => {
-            if (targetFile) {
-                await Util.SaveToMemory("TargetPath", targetFile.path)
+        const NavigationBarOptions = [
+            { label: "Home", id: "Home", file: "index" },
+            { label: "Image Generator", id: "Thumbnail", file: "tools/thumbnail" },
+            { label: "Save Editor", id: "Savedit", file: "tools/saveeditor" },
+            { label: "Level Editor", id: "Leveledit", file: "tools/leveleditor" },
+            { label: "Launcher", id: "Launcher", file: "tools/launcher" },
+            { label: "Settings", id: "Settings", file: "tools/settings" },
+            { label: "Credits", id: "Credits", file: "tools/credits" },
+        ]
+        const NavigationBar = Util.GetById("NavigationBar_Tabs")
+        NavigationBar.innerHTML = ""
+        NavigationBarOptions.forEach(tab => {
+            NavigationBar.innerHTML += `<button id="Navbar_${tab.id}" class="navbutton" style="margin-left: 4px; margin-right: 4px;">${tab.label}</button><div class="nav_divisor1"></div>`
+        })
+        NavigationBarOptions.forEach(tab => {
+            Util.GetById("Navbar_" + tab.id).onclick = async () => {
+                if (targetFile) {
+                    await Util.SaveToMemory("TargetPath", targetFile.path)
+                }
+                Util.SwitchMenuFile(tab.file + ".html")
             }
-            Util.SwitchMenuFile("index.html")
-        }
-        Util.GetById("Navbar_Thumbnail").onclick = async () => {
-            if (targetFile) {
-                await Util.SaveToMemory("TargetPath", targetFile.path)
-            }
-            Util.SwitchMenuFile("tools/thumbnail.html")
-        }
-        Util.GetById("Navbar_Savedit").onclick = async () => {
-            if (targetFile) {
-                await Util.SaveToMemory("TargetPath", targetFile.path)
-            }
-            Util.SwitchMenuFile("tools/saveeditor.html")
-        }
-        Util.GetById("Navbar_Leveledit").onclick = async () => {
-            if (targetFile) {
-                await Util.SaveToMemory("TargetPath", targetFile.path)
-            }
-            Util.SwitchMenuFile("tools/leveleditor.html")
-        }
-        Util.GetById("Navbar_Settings").onclick = async () => {
-            if (targetFile) {
-                await Util.SaveToMemory("TargetPath", targetFile.path)
-            }
-            Util.SwitchMenuFile("tools/settings.html")
-        }
-        Util.GetById("Navbar_Credits").onclick = async () => {
-            if (targetFile) {
-                await Util.SaveToMemory("TargetPath", targetFile.path)
-            }
-            Util.SwitchMenuFile("tools/credits.html")
-        }
+        })
+        setColorTheme(DocumentType)
 
         console.log("loading", DocumentType, "scripts")
         switch (DocumentType) {
@@ -718,6 +703,43 @@
                 Settings.get("THEME_TYPE").then(type => { themeButtons[type].checked = true })
                 Settings.get("THEME_COLOR").then(color => { colorPicker.value = color })
                 break
+            case "Credits":
+                const Credited = [
+                    {
+                        name: "JeremyGamer13", for: "Code & UI Layout", comment: "hello i am a developer",
+                        image: "https://media.discordapp.net/attachments/914411539887456296/1077820194728181842/projile_pijture.png"
+                    },
+                    {
+                        name: "Desmond", for: "UI Design / Code", comment: "des cube",
+                        image: "https://media.discordapp.net/attachments/914411539887456296/1083207542643114024/E7-kfF-XMAA9S-v.png"
+                    },
+                    {
+                        name: "RGC Exists", for: "Directing Specific Features", comment: "really good cool exists",
+                        image: "https://media.discordapp.net/attachments/914411539887456296/1085060296424574986/566b37fc1920df9e3d041ef442a19c38.png"
+                    },
+                    {
+                        name: "cgytrus", for: "GMML Developer", comment: "game maker makes lollipops",
+                        image: "https://avatars.githubusercontent.com/u/30120687?v=4"
+                    },
+                    {
+                        name: "OmegaMetor", for: "GMML Contributor", comment: "epic spelling mistake",
+                        image: "https://avatars.githubusercontent.com/u/42892531?v=4"
+                    },
+                ]
+                const CreditsHolder = Util.GetById("Credits_Holder")
+                Credited.forEach(user => {
+                    CreditsHolder.innerHTML += `<div style="display: flex; flex-direction: row; align-items: center; width: 40%; margin: 6px">
+                    <img width="128" height="128" style="border-radius: 100%;"
+                        src="${user.image}"
+                        alt="${user.name}">
+                    <div style="margin-left: 12px;">
+                        <a style="font-size: 24px;">${user.name}: ${user.for}</a>
+                        <br>
+                        <a>${user.comment}</a>
+                    </div>
+                </div><br>`
+                })
+                break;
         }
     })
 })()
