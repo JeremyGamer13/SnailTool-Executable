@@ -740,6 +740,18 @@
                 </div><br>`
                 })
                 break;
+            case "Launcher":
+                const ProfileList = Util.GetById("Profiles_List")
+                const ProfilePath = "./_profiles"
+                function GetProfiles() {
+                    return new Promise((resolve, reject) => {
+                        fs.readdir(ProfilePath, (err, files) => {
+                            if (err) return reject(err)
+                            resolve(files)
+                        })
+                    })
+                }
+                break;
         }
     })
 })()
