@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link id="CoreTheme_CSS" rel="stylesheet" href="../index.css">
         <link id="PageTheme_CSS" rel="stylesheet" href="../themes/notloaded.css">
     </head>
     <body>
@@ -19,11 +20,15 @@
             <button id="Navbar_Credits" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Credits</button>
             <div class="nav_divisor1"></div>
         </div>
-        <div class="belownav">
+        <div class="belownav" style="overflow-y: auto;">
             <p id="EditingLabel">Currently editing: None</p>
             <button id="Save_Save"   class="windowsbutton">Save</button>
             <button id="Save_SaveAs" class="windowsbutton">Save as</button>
             <button id="Load_Load"   class="windowsbutton" style="margin-left: 16px;">Reload file</button>
+            <div id="TabContent">
+                <p>Loading scripts, please wait...</p>
+            </div>
+            <div style="height: 64px;"></div>
         </div>
     </body>
 </html>

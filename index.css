@@ -1,0 +1,380 @@
+/* core/global css */
+/* themes will only need to be updated to change colors that are set here */
+/* this css file should change fonts, size things correctly, set cursors, etc */
+
+* {
+    font-family: Segoe UI, Helvetica, sans-serif;
+    user-select: none;
+    font-size: 12px;
+    color: #f0c0e3;
+    /*! margin-bottom: 5px; */
+}
+.notransition {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+    -webkit-transition-duration: 0s !important;
+    -moz-transition-duration: 0s !important;
+    -o-transition-duration: 0s !important;
+    transition-duration: 0s !important;
+}
+
+p {
+    display: flex;
+    align-items: center;
+}
+img {
+    user-select: none;
+    image-rendering: pixelated;
+}
+body {
+    overflow: hidden;
+    background-color: rgb(14,0,14);
+}
+.windowsbutton {
+    border-width: 1px;
+    border-radius: 6px;
+    background-color: rgba(0,0,0,0);
+    border-color: #85448E;
+    border-style: solid;
+    transition-duration: 0.5s;
+    padding: 10px;
+    margin: 3px;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+.windowsbutton:focus,
+.windowsbutton:hover {
+    border-width: 1px;
+    border-radius: 6px;
+    background-color: #331F30;
+    border-color: #EA81F9;
+    border-style: solid;
+    transition-duration: 0.5s;
+    outline:unset;
+}
+.windowsbutton:active {
+    border-width: 1px;
+    background-color: #1f131d;
+    border-color: #EA81F9;
+    border-style: solid;
+    transition-duration: 0.5s;
+}
+.navbar {
+    position: absolute;
+    left: 0%;
+    top: 2px;
+    width: 100%;
+    height: 22px;
+    display: flex;
+}
+.belownav {
+    position: absolute;
+    left: 0%;
+    top: 22px;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+.nav_divisor1 {
+    width: 1px;
+    height: 100%;
+    background-color: #85448e7e;
+}
+/* .nav_divisor2 {
+    width: 1px;
+    height: 100%;
+    background-color: #FFFFFF;
+} */
+
+.navbutton {
+    border-width: 1px;
+    border-bottom-width: 0px;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    background-color: rgb(14,0,14);
+    border-color: #85448E;
+    border-style: solid;
+    height: 20px;
+    transition-duration: 0.5s;
+    cursor: pointer;
+}
+.navbutton:focus,
+.navbutton:hover {
+    background-color: rgb(36, 0, 36);
+    transition-duration: 0.5s;
+    outline-style: none;
+}
+.navbutton:active {
+    background-color: #85448E;
+    transition-duration: 0.1s;
+}
+
+textarea,
+input[type=text]::placeholder {
+    color: #f0c0e3;
+    opacity: 0.5;
+}
+textarea,
+input[type=text] {
+    border-width: 1px;
+    border-radius: 16px;
+    background-color: rgb(0,0,0,0);
+    border-color: #894793;
+    border-style: solid;
+    transition-duration: 0.5s;
+    resize: none;
+}
+textarea,
+input[type=text]:hover {
+    border-width: 1px;
+    border-radius: 32px;
+    background-color: #421931;
+    border-color: #ac457a;
+    border-style: solid;
+    transition-duration: 0.5s;
+    resize: none;
+}
+textarea,
+input[type=text]:focus {
+    border-width: 1px;
+    border-radius: 32px;
+    background-color: #5a2243;
+    border-color: #ac457a;
+    border-style: solid;
+    transition-duration: 0.5s;
+    outline:unset;
+    resize: none;
+}
+
+input[type=number]::placeholder {
+    color: #f0c0e3;
+    opacity: 0.5;
+}
+input[type=number] {
+    border-width: 1px;
+    border-radius: 16px;
+    background-color: rgb(0,0,0,0);
+    border-color: #894793;
+    border-style: solid;
+    transition-duration: 0.5s;
+    resize: none;
+}
+input[type=number]:hover {
+    border-width: 1px;
+    border-radius: 32px;
+    background-color: #421931;
+    border-color: #ac457a;
+    border-style: solid;
+    transition-duration: 0.5s;
+    resize: none;
+}
+input[type=number]:focus {
+    border-width: 1px;
+    border-radius: 32px;
+    background-color: #5a2243;
+    border-color: #ac457a;
+    border-style: solid;
+    transition-duration: 0.5s;
+    outline:unset;
+    resize: none;
+}
+
+.contentbox {
+    border-width: 2px;
+    border-radius: 11px;
+    background-color: #442342;
+    border-style: solid;
+    border-color: #894793;
+}
+
+input[type=color] {
+    border-radius: 24px;
+    background-color: #1f131d;
+    border-color: #894793;
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    transition-duration: 0.5s;
+}
+input[type=radio]:hover,
+input[type=color]:focus {
+    outline: unset;
+    background-color: #5a2243;
+    transition-duration: 0.5s;
+}
+input[type=color]::-webkit-color-swatch-wrapper {
+    padding: 3px;
+    border: 0;
+}
+input[type=color]::-webkit-color-swatch {
+    border: 0;
+    border-radius: 24px;
+}
+
+input[type=radio] {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 100%;
+    background-color: #1f131d;
+    border-color: #894793;
+    transition-duration: 0.5s;
+}
+input[type=radio]:focus,
+input[type=radio]:hover {
+    outline: unset;
+    background-color: #331F30;
+    transition-duration: 0.5s;
+}
+input[type="radio"]:checked {
+    background-color: #894793;
+    transition-duration: 0.1s;
+}
+
+input[type=range] {
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 50%;
+}
+input[type=range]:focus {
+    outline-offset: 8px;
+    outline-style: dashed;
+    outline-width: 4px;
+    outline-color: #894793;
+}
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8.4px;
+    cursor: w-resize;
+    background: #894793;
+    border-radius: 10000px;
+    border: 0.2px solid #010101;
+}
+input[type=range]::-webkit-slider-thumb {
+    border: 1px solid #000000;
+    height: 24px;
+    width: 24px;
+    border-radius: 100%;
+    background: #ffffff;
+    cursor: w-resize;
+    -webkit-appearance: none;
+    margin-top: -9px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+    background: #894793;
+}
+input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 8.4px;
+    cursor: w-resize;
+    background: #894793;
+    border-radius: 10000px;
+    border: 0.2px solid #010101;
+}
+input[type=range]::-moz-range-thumb {
+    border: 1px solid #000000;
+    height: 24px;
+    width: 24px;
+    border-radius: 100%;
+    background: #ffffff;
+    cursor: w-resize;
+    margin-top: -9px;
+}
+input[type=range]::-ms-track {
+    width: 100%;
+    height: 8.4px;
+    cursor: w-resize;
+    background: transparent;
+    border-color: transparent;
+    border-width: 16px 0;
+    color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+    background: #894793;
+    border: 0.2px solid #010101;
+    border-radius: 10000px;
+}
+input[type=range]::-ms-fill-upper {
+    background: #894793;
+    border: 0.2px solid #010101;
+    border-radius: 10000px;
+}
+input[type=range]::-ms-thumb {
+    border: 1px solid #000000;
+    height: 24px;
+    width: 24px;
+    border-radius: 100%;
+    background: #ffffff;
+    cursor: w-resize;
+    margin-top: -9px;
+}
+input[type=range]:focus::-ms-fill-lower {
+    background: #894793;
+}
+input[type=range]:focus::-ms-fill-upper {
+    background: #894793;
+}
+
+input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    margin-right: 4px;
+    font: inherit;
+    color: transparent;
+    width: 1.15em;
+    height: 1.15em;
+    border: 0.15em solid #85448E;
+    border-radius: 0.15em;
+    transform: translateY(-0.075em);
+    transition-duration: 0.5s;
+}
+input[type="checkbox"]:focus,
+input[type="checkbox"]:hover {
+    outline: unset;
+    transition-duration: 0.5s;
+    background-color: #331F30;
+}
+input[type="checkbox"]:checked {
+    transition-duration: 0.2s;
+    background-color: #85448E;
+}
+
+/* label elements */
+label {
+    display: flex;
+    align-items: center;
+}
+
+/* SCROLLBAR */
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    opacity: 1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgb(133, 68, 142, 30%);
+    border-radius: 1000px;
+    transition-duration: 0.5s;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(133, 68, 142, 75%);
+    transition-duration: 0.5s;
+}
+::-webkit-scrollbar-corner {
+    opacity: 1;
+}

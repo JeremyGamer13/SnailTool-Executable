@@ -1,6 +1,6 @@
 const fs = require("fs")
-const Util = require("../utilities.js")
-const Converter = require("../converter.js")
+const Util = require("../../utilities.js")
+const Converter = require("../../converter.js")
 
 class LevelEditor {
     static CoreToolIds = [
@@ -39,12 +39,12 @@ class LevelEditor {
         if (customTools.length <= 0) return
     }
     static CreateToolDependencies(key, value) {
-        Object.getOwnPropertyNames(LevelEditor.ImportedTools).forEach(toolName => {
+        for (const toolName in LevelEditor.ImportedTools) {
             const module = LevelEditor.ImportedTools[toolName]
-            if (!module.Dependencies) return
-            if (!module.Dependencies.includes(key)) return
+            if (!module.Dependencies) continue
+            if (!module.Dependencies.includes(key)) continue
             module.LoadedDependencies[key] = value
-        })
+        }
     }
 
     static GetTileRotationAnchor(tile) {
@@ -109,10 +109,25 @@ class LevelEditor {
         }
     }
 
+    // used to start the editor & edit / use html DOM
     static async Run(targetFile) {
         const ToolList = Util.GetById("Tools_List")
         const TileHolder = Util.GetById("LevelContents")
+        const ToolPreviewHolder = Util.GetById("LevelToolPreview")
+        const ToolCustomDisplay = Util.GetById("LevelToolDisplay")
+        const ModuleToolSection = Util.GetById("ModuleTool_CustomSection")
+        const PropertyMenu = Util.GetById("Details_ToolProperties")
+        // send elements to the modules if they support it
+        for (const toolName in LevelEditor.ImportedTools) {
+            const module = LevelEditor.ImportedTools[toolName]
+            if (module) {
+                if (module.OnAttachedElements) module.OnAttachedElements(Util.GetDocumentBody(), TileHolder, ToolPreviewHolder, ToolCustomDisplay, PropertyMenu, ToolList)
+            }
+        }
+        // currentTool stores the current tool properties & such (look below)
+        // create buttons that update this var for the imported tools
         let currentTool = null
+        // this DOESNT use a for () loop since we should do this without stopping if an error occurs or the function waits
         Object.getOwnPropertyNames(LevelEditor.ImportedTools).forEach(toolname => {
             LevelEditor.CreateToolButton(ToolList, LevelEditor.ImportedTools[toolname], () => {
                 const toolData = {
@@ -124,8 +139,28 @@ class LevelEditor {
                 currentTool = toolData
                 UpdateToolDetails(toolname)
                 console.log("switched tool", toolData)
+                // clear out the ModuleToolSection & tool related stuff
+                ModuleToolSection.innerHTML = ""
+                ToolPreviewHolder.innerHTML = ""
+                ToolCustomDisplay.innerHTML = ""
+                // run OnUnequip for modules
+                // run before equip since unequip likely does some deloading functions
+                for (const toolName in LevelEditor.ImportedTools) {
+                    if (currentTool.name == toolName) continue // ignore this tool, we equipped it
+                    const module = LevelEditor.ImportedTools[toolName]
+                    if (module) {
+                        if (module.OnUnequip) module.OnUnequip(currentTool)
+                    }
+                }
+                // run OnEquip for modules
+                const module = LevelEditor.ImportedTools[currentTool.name]
+                if (module) {
+                    if (module.OnEquip) module.OnEquip(currentTool)
+                    if (module.ModifyToolMenu) module.ModifyToolMenu(ModuleToolSection)
+                }
             })
         })
+        // create level data & the function to modify it
         let editLevelData = Converter.CloneMainJSONFormat()
         // let editLevelData = Converter.LevelJSONFormat
         function CreateObject(toolInheritedData, tile, x, y, tileWidth, tileHeight, rotation, corrupted, addToData, objIndex) {
@@ -137,7 +172,7 @@ class LevelEditor {
                     position: { x: x, y: y },
                     direction: rotation,
                     scale: { x: tileWidth, y: tileHeight },
-                    properties: currentTool ? currentTool.properties : []
+                    properties: toolInheritedData ? toolInheritedData.properties : []
                 }
                 editLevelData.objects[tile][index] = object
             }
@@ -168,9 +203,31 @@ class LevelEditor {
                 }
             })
         }
+        // like create object except we just create the html styling data & return it
+        function CreateStylingDataForObject(tile, x, y, tileWidth, tileHeight, rotation, corrupted) {
+            const scaleAndOffset = LevelEditor.GetTileVisualData(tile)
+            const style = {
+                position: "absolute",
+                left: `${0 + (scaleAndOffset.offset.x * tileWidth)}px`,
+                top: `${0 + (scaleAndOffset.offset.y * tileHeight)}px`,
+                width: Math.abs((tileWidth * scaleAndOffset.scale.x) * 60) + "px",
+                height: Math.abs((tileHeight * scaleAndOffset.scale.y) * 60) + "px",
+            }
+            // if (tile == "trigg_ai") style.zIndex = 0
+            // else style.zIndex = 1
+            if (corrupted) {
+                style.filter = "hue-rotate(138deg)"
+            }
+            style.transform = `translate(${x}px, ${y}px) scale(${tileWidth < 0 ? -1 : 1}, ${tileHeight < 0 ? -1 : 1}) rotate(${0 - rotation}deg)`
+            style.transformOrigin = LevelEditor.GetTileRotationAnchor(tile)
+            style.src = LevelEditor.GetImageOfTile(tile)
+            return style
+        }
+        // just creates everything based on the given data
         function LoadLevel(data) {
             editLevelData = data
             TileHolder.innerHTML = ""
+            // this makes it so we can scroll through the level properly
             Util.CreateElement("img", TileHolder, img => {
                 img.src = "../images/objects/transparent.png"
                 img.draggable = false
@@ -205,6 +262,7 @@ class LevelEditor {
                 })
             })
         }
+        // load level from the one selected on the home tab
         Util.ExistsInMemory("TargetPath").then(async exists => {
             if (exists) {
                 Util.GetFromMemory("TargetPath").then(async path => {
@@ -218,6 +276,7 @@ class LevelEditor {
                 })
             }
         })
+        // save level button
         Util.GetById("Save_Save").onclick = () => {
             if (!confirm("Save and overwrite the original with the edited level?")) return
             const levelData = Converter.JSONToLevelEditor(editLevelData)
@@ -231,6 +290,7 @@ class LevelEditor {
                 alert("Saved level!")
             })
         }
+        // save as level button
         Util.GetById("Save_SaveAs").onclick = () => {
             const levelData = Converter.JSONToLevelEditor(editLevelData)
             console.log(levelData)
@@ -239,6 +299,7 @@ class LevelEditor {
                 Util.PCall(function () { Util.SetWindowProgress(-1) })
             })
         }
+        // reload button
         Util.GetById("Load_Load").onclick = () => {
             if (!confirm("Are you sure you want to reload the level?")) return
             Util.GrabFile(targetFile.path).then(async file => {
@@ -249,6 +310,7 @@ class LevelEditor {
                 LoadLevel(levelData)
             })
         }
+        // todo: move this function to static
         function GetFullNameProperty(name) {
             switch (name) {
                 case "hlp":
@@ -309,7 +371,6 @@ class LevelEditor {
                     return name
             }
         }
-        const PropertyMenu = Util.GetById("Details_ToolProperties")
         function UpdateToolDetails(toolname) {
             const ToolClass = LevelEditor.ImportedTools[toolname]
             if (ToolClass) {
@@ -371,6 +432,19 @@ class LevelEditor {
                     currentTool = toolData
                     UpdateToolDetails()
                     console.log("switched tool", toolData)
+                    // clear out the ModuleToolSection & tool stuff
+                    ModuleToolSection.innerHTML = ""
+                    ToolPreviewHolder.innerHTML = ""
+                    ToolCustomDisplay.innerHTML = ""
+                    // run OnUnequip for modules
+                    // we cant equip module tools here btw since these are actually objects
+                    for (const toolName in LevelEditor.ImportedTools) {
+                        if (currentTool.name == toolName) continue // ignore this tool, we equipped it
+                        const module = LevelEditor.ImportedTools[toolName]
+                        if (module) {
+                            if (module.OnUnequip) module.OnUnequip(currentTool)
+                        }
+                    }
                 }
             }
         })
@@ -391,6 +465,10 @@ class LevelEditor {
         LevelEditor.CreateToolDependencies("SkipPlaceTick", () => {
             CanActivateBackgroundClick = false
         })
+        LevelEditor.CreateToolDependencies("GetLevelData", () => {
+            return editLevelData
+        })
+        LevelEditor.CreateToolDependencies("CreateStylingDataForObject", CreateStylingDataForObject)
         TileHolder.onclick = (e) => {
             if (!CanActivateBackgroundClick) {
                 CanActivateBackgroundClick = true
@@ -400,7 +478,6 @@ class LevelEditor {
             const module = LevelEditor.ImportedTools[currentTool.name]
             if (module) {
                 if (module.OnBackgroundClick) module.OnBackgroundClick(e, TileHolder, ToolPlacementElements, currentTool)
-                return
             }
             const offset = TileHolder.getClientRects()[0]
             const _x = TileHolder.scrollLeft + (e.x - offset.x)
@@ -413,6 +490,10 @@ class LevelEditor {
             const x = (gridSize.x == 0 ? _x : (gridSize.x * Math.round(_x / gridSize.x)))
             const y = (gridSize.y == 0 ? _y : (gridSize.y * Math.round(_y / gridSize.y)))
             const corrupted = Number(Converter.GetProperty("coru", currentTool.properties)) == 1
+            if (module) {
+                if (module.OnTileCreationRequest) module.OnTileCreationRequest(CreateObject, currentTool, x, y, currentTool.scale.x, currentTool.scale.y, currentTool.direction, corrupted)
+                return
+            }
             CreateObject(
                 currentTool,
                 currentTool.name,
@@ -424,19 +505,207 @@ class LevelEditor {
                 corrupted
             )
         }
+
+        // next 2 only exist for module support
+        TileHolder.onmousedown = (e) => {
+            if (!currentTool) return
+            const module = LevelEditor.ImportedTools[currentTool.name]
+            if (module) {
+                // add more info
+                const eventExpanded = {
+                    bounds: TileHolder.getBoundingClientRect(),
+                    scroll: {
+                        x: TileHolder.scrollLeft,
+                        y: TileHolder.scrollTop,
+                        width: TileHolder.scrollWidth,
+                        height: TileHolder.scrollHeight,
+                    },
+                    button: e.button,
+                    clicked: e.buttons > 0,
+                    isLeftClick: e.button == 0,
+                    isMiddleClick: e.button == 1,
+                    isRightClick: e.button == 2,
+                }
+                // correct x and y to be the actual x and y
+                eventExpanded.x = (e.x - eventExpanded.bounds.left)
+                eventExpanded.y = (e.y - eventExpanded.bounds.top)
+                // we still provide the event since we dont know what the module might need from it
+                if (module.OnCursorDown) module.OnCursorDown(eventExpanded, e, TileHolder, ToolPlacementElements, currentTool)
+            }
+        }
+        TileHolder.onmouseup = (e) => {
+            if (!currentTool) return
+            const module = LevelEditor.ImportedTools[currentTool.name]
+            if (module) {
+                // add more info
+                const eventExpanded = {
+                    bounds: TileHolder.getBoundingClientRect(),
+                    scroll: {
+                        x: TileHolder.scrollLeft,
+                        y: TileHolder.scrollTop,
+                        width: TileHolder.scrollWidth,
+                        height: TileHolder.scrollHeight,
+                    },
+                    button: e.button,
+                    clicked: e.buttons > 0,
+                    isLeftClick: e.button == 0,
+                    isMiddleClick: e.button == 1,
+                    isRightClick: e.button == 2,
+                }
+                // correct x and y to be the actual x and y
+                eventExpanded.x = (e.x - eventExpanded.bounds.left)
+                eventExpanded.y = (e.y - eventExpanded.bounds.top)
+                // we still provide the event since we dont know what the module might need from it
+                if (module.OnCursorUp) module.OnCursorUp(eventExpanded, e, TileHolder, ToolPlacementElements, currentTool)
+            }
+        }
+
+        TileHolder.onmousemove = (e) => {
+            if (!currentTool) return
+            // add more info
+            const eventExpanded = {
+                bounds: TileHolder.getBoundingClientRect(),
+                scroll: {
+                    x: TileHolder.scrollLeft,
+                    y: TileHolder.scrollTop,
+                    width: TileHolder.scrollWidth,
+                    height: TileHolder.scrollHeight,
+                },
+                button: e.button,
+                clicked: e.buttons > 0,
+                isLeftClick: e.button == 0,
+                isMiddleClick: e.button == 1,
+                isRightClick: e.button == 2,
+            }
+            // correct x and y to be the actual x and y
+            eventExpanded.x = (e.x - eventExpanded.bounds.left)
+            eventExpanded.y = (e.y - eventExpanded.bounds.top)
+            // create default preview for things like objects
+            let toolPreviewData = {
+                html: '<p style="font-weight: bold; color: red">Generation Failed</p>'
+            }
+            UpdatePlacementElements()
+            const module = LevelEditor.ImportedTools[currentTool.name]
+            if (module) {
+                // we still provide the event since we dont know what the module might need from it
+                if (module.OnCursorMove) module.OnCursorMove(eventExpanded, e, TileHolder, ToolPlacementElements, currentTool)
+                if (module.CreateToolPreview) {
+                    const prev = module.CreateToolPreview()
+                    if (typeof prev === "undefined") {
+                        toolPreviewData.html = ""
+                    } else {
+                        if (prev.useDefault != true) {
+                            toolPreviewData = prev
+                        }
+                    }
+                } else {
+                    toolPreviewData.html = ""
+                }
+            } else {
+                // this is an object
+                try {
+                    const corrupted = Number(Converter.GetProperty("coru", currentTool.properties)) == 1
+                    const style = CreateStylingDataForObject(
+                        currentTool.name,
+                        0,
+                        0,
+                        currentTool.scale.x,
+                        currentTool.scale.y,
+                        currentTool.direction,
+                        corrupted
+                    )
+                    toolPreviewData.html = '<img style="'
+                    for (const attribute in style) {
+                        if (attribute == "src") continue // handle after
+                        toolPreviewData.html += `${attribute}: ${style[attribute]};`
+                    }
+                    toolPreviewData.html += '" src="'
+                    toolPreviewData.html += style.src
+                    toolPreviewData.html += '">'
+                } catch (err) {
+                    console.warn(currentTool.name, "style generation failed;", err);
+                }
+            }
+            // create preview
+            // first clear & reset
+            ToolPreviewHolder.innerHTML = ""
+            ToolPreviewHolder.style.left = "0px"
+            ToolPreviewHolder.style.top = "0px"
+            ToolPreviewHolder.style.opacity = 0.5
+            if (toolPreviewData.html == "") return // we dont need to create anything, we are good with just resetting
+            // the tool COULD have provided invalid data
+            // so wrap in try catch to give proper errors
+            try {
+                // dont do ! since null should default to us following
+                if (toolPreviewData.followCursor != false) {
+                    // dont do ! since null should default to us following grid
+                    if (toolPreviewData.alignGrid != false) {
+                        const gridSize = {
+                            x: Math.round(Util.Clamp(ToolPlacementElements.alignment.x.value, 0, Infinity)),
+                            y: Math.round(Util.Clamp(ToolPlacementElements.alignment.y.value, 0, Infinity)),
+                        }
+                        const x = eventExpanded.x
+                        const y = eventExpanded.y
+                        const gridx = (gridSize.x == 0 ? x : (gridSize.x * Math.round(x / gridSize.x)))
+                        const griddy = (gridSize.y == 0 ? y : (gridSize.y * Math.round(y / gridSize.y)))
+                        ToolPreviewHolder.style.left = gridx + "px"
+                        ToolPreviewHolder.style.top = griddy + "px"
+                    } else {
+                        ToolPreviewHolder.style.left = eventExpanded.x + "px"
+                        ToolPreviewHolder.style.top = eventExpanded.y + "px"
+                    }
+                }
+                // if opacity is defined, set it to that
+                if (typeof toolPreviewData.opacity != "undefined") {
+                    ToolPreviewHolder.style.opacity = toolPreviewData.opacity
+                }
+                ToolPreviewHolder.innerHTML = toolPreviewData.html
+            } catch (err) {
+                console.warn(currentTool.name, "provided invalid preview data;", err)
+            }
+        }
+        // use R for easy rotation
         Util.GetDocumentBody().addEventListener("keypress", (e) => {
-            if (e.key == "e" || e.key == "E") {
+            if (e.key == "r" || e.key == "R") {
                 currentTool.direction += Converter.SafeNullAndNaN(Number(ToolPlacementElements.rotation.amount.value))
                 ToolPlacementElements.rotation.degrees.value = currentTool.direction
             }
         })
-        const ViewportFrame = Util.GetById("LevelContents")
-        const ViewportZoomElement = Util.GetById("Viewport_Zoom")
-        ViewportZoomElement.onchange = () => {
-            const zoom = Number(ViewportZoomElement.value) / 100
-            ViewportFrame.style.width = (640 / zoom) + "px"
-            ViewportFrame.style.height = (360 / zoom) + "px"
-            ViewportFrame.style.transform = `scale(${zoom})`
+        // zoom feature but removed because placing is goofy (just resize the window m8)
+        // const ViewportFrame = Util.GetById("LevelContents")
+        // const ViewportZoomElement = Util.GetById("Viewport_Zoom")
+        // ViewportZoomElement.onchange = () => {
+        //     const zoom = Number(ViewportZoomElement.value) / 100
+        //     ViewportFrame.style.width = (640 / zoom) + "px"
+        //     ViewportFrame.style.height = (360 / zoom) + "px"
+        //     ViewportFrame.style.transform = `scale(${zoom})`
+        // }
+        // manage right panel tabs
+        const PanelTabs = {
+            Objects: Util.GetById("ObjectList_Tab"),
+            Tool: Util.GetById("ToolOptions_Tab"),
+            Display: Util.GetById("Display_Tab")
+        }
+        const PanelSwitches = {
+            Objects: Util.GetById("PanelRight_ObjectList"),
+            Tool: Util.GetById("PanelRight_ToolOptions"),
+            Display: Util.GetById("PanelRight_Display")
+        }
+        // on click switch to tab
+        PanelSwitches.Objects.onclick = () => {
+            PanelTabs.Objects.style.display = ""
+            PanelTabs.Tool.style.display = "none"
+            PanelTabs.Display.style.display = "none"
+        }
+        PanelSwitches.Tool.onclick = () => {
+            PanelTabs.Objects.style.display = "none"
+            PanelTabs.Tool.style.display = ""
+            PanelTabs.Display.style.display = "none"
+        }
+        PanelSwitches.Display.onclick = () => {
+            PanelTabs.Objects.style.display = "none"
+            PanelTabs.Tool.style.display = "none"
+            PanelTabs.Display.style.display = ""
         }
     }
 }

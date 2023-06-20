@@ -8,6 +8,7 @@ class Util {
         if (number < min) return min
         if (number > max) return max
     }
+
     static IsJson = (json) => {
         let canparse = true
         try {
@@ -17,6 +18,27 @@ class Util {
         }
         return canparse
     }
+    static IsNumber = (num) => {
+        const input = Number(num)
+        return !isNaN(input)
+    }
+    static IsArray = (array) => {
+        const input = array
+        return Array.isArray(array)
+    }
+    static IsObject = (object) => {
+        const input = object
+        if (typeof input !== "object") return false
+        // arrays are also named objects
+        return !Array.isArray(object)
+    }
+    static IsObjectWithKeys = (object) => {
+        const input = object
+        if (!Util.IsObject(input)) return false
+        const keys = Object.getOwnPropertyNames(input)
+        return keys.length > 0
+    }
+
     static PCall = (func, catc) => {
         let success = true
         let error = null
@@ -53,11 +75,20 @@ class Util {
         }
     }
 
+    static CloneJSON = (object) => {
+        return JSON.parse(JSON.stringify(object))
+    }
+
     static AddDocumentCore = (name, object) => {
         document[name] = object
     }
     static GetDocumentBody = () => {
         return document.body
+    }
+
+    static RandomID = () => {
+        const validCharacters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_']
+        return Array.from(Array(40).keys()).map(() => { return Math.round(Math.random() * (validCharacters.length - 1)) }).join("")
     }
 
     static Reparent = (element, parent, prepend) => {

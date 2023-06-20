@@ -7,9 +7,9 @@ function createWindow() {
     const win = new BrowserWindow({
         title: "SnailTool",
         icon: "wrench.png",
-        width: 1280,
-        height: 720,
-        backgroundColor: "#F0F0F0",
+        width: 1920 / 1.25,
+        height: 1080 / 1.25,
+        backgroundColor: "#000000",
         webPreferences: {
             devTools: IsDeveloperMode,
             sandbox: false,
@@ -17,7 +17,7 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js')
         }
     })
-
+    win.maximize()
     win.loadFile('index.html')
     if (!IsDeveloperMode) win.removeMenu()
     return win
@@ -28,7 +28,7 @@ app.whenReady().then(() => {
     window = createWindow()
     app.___createdWindowForUse = window
     app.setName('SnailTool')
-    app.setAppUserModelId('com.jeremygamer13.snailtool')
+    app.setAppUserModelId('com.jeremygamer13.SnailTool')
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

@@ -7,7 +7,11 @@
     const Converter = require("./converter.js")
     const Settings = require("./settings.js")
     const ImageGenerator = require("./image.js")
-    const LevelEditor = require("./leveleditor/leveleditor")
+
+    const TabModules = {
+        LevelEditor: require("./advancedmenus/leveleditor"),
+        SaveEditor: require("./advancedmenus/saveeditor"),
+    }
 
     const MousePosition = { x: 0, y: 0 }
 
@@ -173,7 +177,7 @@
             { label: "Image Generator", id: "Thumbnail", file: "tools/thumbnail" },
             { label: "Save Editor", id: "Savedit", file: "tools/saveeditor" },
             { label: "Level Editor", id: "Leveledit", file: "tools/leveleditor" },
-            { label: "Launcher", id: "Launcher", file: "tools/launcher" },
+            // { label: "Launcher", id: "Launcher", file: "tools/launcher" },
             { label: "Settings", id: "Settings", file: "tools/settings" },
             { label: "Credits", id: "Credits", file: "tools/credits" },
         ]
@@ -221,6 +225,26 @@
                             }
                         })
                     }
+                    Util.GetById("grabMainSaveFile").onclick = () => {
+                        Settings.get("SAVEPATH").then(value => {
+                            if (value == null) {
+                                alert("As part of a one-time setup, you will need to select the file to grab. Once you set this, it will be remembered and you wont have to do it again.")
+                                Util.AskForFile().then(files => {
+                                    targetFile = files[0]
+                                    TargetFilePicker.innerText = targetFile.path
+                                    Settings.set("SAVEPATH", targetFile.path)
+                                })
+                            } else {
+                                Util.GrabFile(value).then(file => {
+                                    targetFile = file
+                                    TargetFilePicker.innerText = targetFile.path
+                                })
+                            }
+                        })
+                    }
+                    // this code checks for a file path being in memory when switching tabs
+                    // if it is then it sets it as the target file
+                    // otherwise we grab the last saved level if it is set
                     Util.ExistsInMemory("TargetPath").then(exists => {
                         if (exists) {
                             Util.GetFromMemory("TargetPath").then(path => {
@@ -563,7 +587,7 @@
                 }
                 Util.GetById("Save_Save").onclick = () => {
                     if (!CurrentImage) return alert("No image has have been generated yet.")
-                    Util.AskToSaveFile(CurrentImage, String(file.name).split(".")[0] + ".png", [
+                    Util.AskToSaveFile(CurrentImage, String(targetFile.name).split(".")[0] + ".png", [
                         { name: 'Level Preview Image', extensions: ['png'] }
                     ])
                 }
@@ -635,24 +659,24 @@
                 })
                 break
             case "LevelEditor":
-                LevelEditor.LoadTools()
-                LevelEditor.Run(targetFile)
+                TabModules.LevelEditor.LoadTools()
+                TabModules.LevelEditor.Run(targetFile)
                 break;
             case "SaveEditor":
-                (async function () {
-                    Util.ExistsInMemory("TargetPath").then(async exists => {
-                        if (exists) {
-                            Util.GetFromMemory("TargetPath").then(async path => {
-                                Util.GrabFile(path).then(async file => {
-                                    targetFile = file
-                                    Util.GetById("EditingLabel").innerText = "Currently editing: " + targetFile.path
-                                })
-                            })
-                        }
-                    })
-                })();
+                if (await Util.ExistsInMemory("TargetPath")) {
+                    const filePath = await Util.GetFromMemory("TargetPath")
+                    const file = await Util.GrabFile(filePath)
+                    const editLabel = Util.GetById("EditingLabel")
+
+                    targetFile = file
+                    editLabel.innerText = "Currently editing: " + targetFile.path
+                }
+                TabModules.SaveEditor.load(targetFile)
                 break
             case "Settings":
+                const fullOptions = {
+                    lightTheme: Util.GetById("fulloption_lighttheme")
+                }
                 const buttons = {
                     resetAll: Util.GetById("SettingsReset_All"),
                     resetPath: Util.GetById("SettingsReset_LevelPath"),
@@ -662,6 +686,13 @@
                     light: Util.GetById("theme_light"),
                     custom: Util.GetById("theme_custom"),
                 }
+
+                const extras = {
+                    // discordRpc: Util.GetById("Settings_Extras_DiscordRPC"),
+
+                    removeLight: Util.GetById("Settings_Extras_Babies_RemoveLightTheme"),
+                }
+
                 const colorPicker = Util.GetById("theme_color")
                 themeButtons.dark.onclick = () => {
                     Settings.set("THEME_TYPE", "dark").then(() => {
@@ -702,6 +733,43 @@
                 // load settings values
                 Settings.get("THEME_TYPE").then(type => { themeButtons[type].checked = true })
                 Settings.get("THEME_COLOR").then(color => { colorPicker.value = color })
+
+                // extras
+                Object.getOwnPropertyNames(extras).forEach(objectKey => {
+                    extras[objectKey].onclick = () => {
+                        const setting = extras[objectKey].getAttribute("setting")
+                        const value = extras[objectKey].checked
+
+                        Settings.set(setting, value)
+                        updateExtraOption(setting, value)
+                    }
+                })
+
+                Settings.get("THEME_LIGHT_REMOVED").then(value => {
+                    const removed = String(value) === "true"
+                    fullOptions.lightTheme.style.display = removed ? "none" : ""
+                    if (removed) {
+                        Settings.set("THEME_TYPE", "dark").then(() => {
+                            setColorTheme(DocumentType)
+                        })
+                    }
+                })
+
+                // d
+                function updateExtraOption(option, newValue) {
+                    switch (option) {
+                        case "THEME_LIGHT_REMOVED": {
+                            const removed = String(newValue) === "true"
+                            fullOptions.lightTheme.style.display = removed ? "none" : ""
+                            if (removed) {
+                                Settings.set("THEME_TYPE", "dark").then(() => {
+                                    setColorTheme(DocumentType)
+                                })
+                            }
+                            break
+                        }
+                    }
+                }
                 break
             case "Credits":
                 const Credited = [
@@ -728,7 +796,7 @@
                 ]
                 const CreditsHolder = Util.GetById("Credits_Holder")
                 Credited.forEach(user => {
-                    CreditsHolder.innerHTML += `<div style="display: flex; flex-direction: row; align-items: center; width: 40%; margin: 6px">
+                    CreditsHolder.innerHTML += `<div style="display: flex; flex-direction: row; align-items: center; justify-content: center; width: 40%; margin: 6px">
                     <img width="128" height="128" style="border-radius: 100%;"
                         src="${user.image}"
                         alt="${user.name}">

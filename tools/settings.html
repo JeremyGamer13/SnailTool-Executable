@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link id="CoreTheme_CSS" rel="stylesheet" href="../index.css">
         <link id="PageTheme_CSS" rel="stylesheet" href="../themes/notloaded.css">
     </head>
     <body>
@@ -19,18 +20,49 @@
             <button id="Navbar_Credits" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Credits</button>
             <div class="nav_divisor1"></div>
         </div>
-        <div class="belownav">
+        <div class="belownav" style="overflow-y: auto;">
             <a style="font-size: large;">General</a>
             <br><br>
             <button class="windowsbutton" id="SettingsReset_LevelPath">Reset default level path</button>
             <p style="font-size: large;">Themes</p>
             <p><input type="radio" name="themeOption" id="theme_dark"> Dark Theme</p>
-            <p><input type="radio" name="themeOption" id="theme_light"> Light Theme</p>
+            <p id="fulloption_lighttheme"><input type="radio" name="themeOption" id="theme_light"> Light Theme</p>
             <br>
             <p><input type="radio" name="themeOption" id="theme_custom"> Custom Theme</p>
             <p>Custom Color: <input type="color" value="#e2acd3" id="theme_color"></p>
+            <!-- <p style="font-size: large;">Mods</p> -->
+            <!-- level editor tools are loaded in a "Plugins" folder -->
+            <!-- <p>Level Editor:</p>
+            <div style="margin-left: 8px;">
+                <p>Custom Tools:</p>
+                <div style="margin-left: 8px;">
+                    <a>Load tools from: <button class="windowsbutton">No folder selected</button></a><br>
+                    <a style="font-size: 10px;">
+                        Custom tools are ".js" scripts. If a folder is selected, SnailTool will load all JS files from that folder.
+                        Do NOT load a tool that you cannot confirm is safe. 
+                    </a>
+                </div>
+            </div> -->
+            <!-- <p>Launcher:</p>
+            <div style="margin-left: 8px;">
+                <p>GMML Version options:</p>
+                <div style="margin-left: 8px;">
+                    <p><input type="radio" name="GMMLRelease" id="Settings_Mods_GMMLRelease_Latest" checked="true">Always pull latest GMML release</p>
+                    <p><input type="radio" name="GMMLRelease" id="Settings_Mods_GMMLRelease_Path">Use <button class="windowsbutton">No folder selected</button> for every GMML enabled profile</p>
+                </div>
+            </div>
+            <p style="font-size: large;">Extras</p> -->
+            <!-- <p><input type="checkbox" id="Settings_Extras_GMMLSupport">App sound effects</p> -->
+            <!-- <p><input type="checkbox" setting="DISCORD_RPC" id="Settings_Extras_DiscordRPC">Discord RPC status (requires restart on change)</p> -->
+            <p>For babies:</p>
+            <p><input type="checkbox" setting="THEME_LIGHT_REMOVED" id="Settings_Extras_Babies_RemoveLightTheme">Remove light theme option</p>
+            <!-- <p><input type="checkbox" setting="THEME_LIGHT_REMOVED" id="Settings_Extras_Babies_ConfirmSwitchTab">Confirmation before switching tabs</p>
+            <p><input type="checkbox" setting="THEME_LIGHT_REMOVED" id="Settings_Extras_Babies_ConfirmChangeSettings">Confirmation before changing settings</p>
+            <p><input type="checkbox" setting="THEME_LIGHT_REMOVED" id="Settings_Extras_Babies_ConfirmSavingFiles">Confirmation before saving files</p> -->
+            <!-- <p><input type="checkbox" id="Settings_Extras_GMMLSupport">Hide GMML Options in Launcher tab</p> -->
             <br><br><br><br>
             <button class="windowsbutton" id="SettingsReset_All">Reset all Settings</button>
+            <div style="height: 64px;"></div>
         </div>
     </body>
 </html>

@@ -1,7 +1,59 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link id="CoreTheme_CSS" rel="stylesheet" href="../index.css">
         <link id="PageTheme_CSS" rel="stylesheet" href="../themes/notloaded.css">
+        <style>
+            /* number input too long */
+            input[type=number] {
+                width: 64px;
+            }
+
+            /* actual stuff */
+            .LevelHolder {
+                width: calc(100% - 384px);
+                height: 100%;
+                overflow: hidden;
+                background: radial-gradient(circle, rgba(46,0,28,1) 50%, rgba(0,0,0,1) 100%);
+                position: relative;
+            }
+            .LevelFrontElement {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+            }
+
+            .PanelRight {
+                width: 384px;
+                height: 100%;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+            .ObjectList {
+                width: 100%;
+                height: 100%;
+            }
+
+            .Options_Header {
+                font-weight: bold;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .PanelRight_TabList {
+                width: 100%;
+                height: 22px;
+                display: flex;
+                
+            }
+            .PanelRight_Tabs {
+                width: 100%;
+                height: calc(100% - 44px);
+            }
+        </style>
     </head>
     <body>
         <div style="display:none" id="DocumentHandleType">LevelEditor</div>
@@ -19,89 +71,127 @@
             <button id="Navbar_Credits" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Credits</button>
             <div class="nav_divisor1"></div>
         </div>
-        <div class="belownav" style="overflow: auto;">
+        <div class="belownav" style="overflow: auto; height: 100%;">
             <p id="EditingLabel">Currently editing: None</p>
             <button id="Save_Save"   class="windowsbutton">Save</button>
             <button id="Save_SaveAs" class="windowsbutton">Save as</button>
             <button id="Load_Load"   class="windowsbutton" style="margin-left: 16px;">Reload file</button>
             <br>
             <div id="Tools_List">
+                <!-- will contain tools on load -->
                 <!-- <button id="Tool_Wire"    tool="wire_tool"    class="windowsbutton"><img draggable="false" width="32" height="32" src="../images/objects/wire.png"></button> -->
                 <!-- <button id="Tool_Package" tool="package_tool" class="windowsbutton"><img draggable="false" width="32" height="32" src="../images/objects/package.png"></button> -->
                 <!-- <button id="Tool_Pick"    tool="pick_tool"    class="windowsbutton"><img draggable="false" width="32" height="32" src="../images/objects/picker.png"></button> -->
                 <!-- <button id="Tool_Delete"  tool="delete_tool"  class="windowsbutton"><img draggable="false" width="32" height="32" src="../images/objects/trash.png"></button> -->
             </div>
 
-            <div style="display:flex">
-                <div id="LevelContentHolder" class="contentbox" style="width: 640px; height: 360px; overflow: hidden; background: radial-gradient(circle, rgba(46,0,28,1) 50%, rgba(0,0,0,1) 100%);">
-                    <div id="LevelContents" style="overflow: auto; position: relative; height: 100%; transform-origin: left top;"></div>
+            <div style="display:flex; height: calc(100% - 196px);">
+                <div id="LevelContentHolder" class="LevelHolder contentbox">
+                    <div id="LevelContents" style="overflow: auto; position: relative; height: 100%; transform-origin: left top; z-index: 10;"></div>
+                    <div id="LevelToolPreview" class="LevelFrontElement" style="z-index: 15;"></div>
+                    <div id="LevelToolDisplay" class="LevelFrontElement" style="z-index: 20;"></div>
                 </div>
-                <div style="margin-left:4px; width: 600px;">
-                    <a style="font-weight: bold; display: flex; align-items: center; justify-content: center;">General</a>
-                    <br>
-                    <a style="display: flex; align-items: center;">Viewport Zoom <input id="Viewport_Zoom" type="range" value="100" min="25" max="200" style="margin-left: 8px;"></a>
-                    
-                    <br>
-                    <a style="font-weight: bold; display: flex; align-items: center; justify-content: center;">Options & Details</a>
-                    <br>
-                    <a>Object placement alignment</a>
-                    <input id="Details_AlignmentX" type="text" value="60" placeholder="Alignment X">
-                    <input id="Details_AlignmentY" type="text" value="60" placeholder="Alignment Y">
-                    <br>
-                    <a>Object scale</a>
-                    <input id="Details_ScaleX" type="text" value="1" placeholder="Scale X">
-                    <input id="Details_ScaleY" type="text" value="1" placeholder="Scale Y">
-                    <br>
-                    <a>Object rotation</a>
-                    <input id="Details_RotationDegrees" type="text" value="0" placeholder="Rotation in degrees (CCW)">
-                    <input id="Details_RotationAmount" type="text" value="" placeholder="Rotation amount (E key)">
-                    <br><br>
-                    <div style="display: flex; align-items: center; justify-content: center;">
-                        <img id="Details_ToolIcon" width="64" height="64" src="../images/objects/unknown.png" draggable="false" style="object-fit: contain;">
+                <div class="PanelRight">
+                    <div class="PanelRight_TabList">
+                        <button id="PanelRight_ObjectList" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Objects</button>
+                        <div class="nav_divisor1"></div>
+                        <button id="PanelRight_ToolOptions" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Tool</button>
+                        <div class="nav_divisor1"></div>
+                        <button id="PanelRight_Display" class="navbutton" style="margin-left: 4px; margin-right: 4px;">Display</button>
                     </div>
-                    <br>
-                    <div id="Details_ToolProperties" class="contentbox" style="width: 100%; height: 100px; overflow: auto; white-space: wrap;"></div>
+                    <div class="PanelRight_Tabs">
+                        <div id="ObjectList_Tab">
+                            <!-- ObjectList -->
+                            <div class="ObjectList">
+                                <p class="Options_Header">Cross-editor Compatibility</p>
+                                <button id="Tool_Player"            tool="player"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/player.png"></button>
+                                <button id="Tool_Wall"              tool="wall"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall.png"></button>
+                                <button id="Tool_WallGlow"          tool="wall_gl"     class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_glow.png"></button>
+                                <button id="Tool_Spike"             tool="spike"       class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/spike.png"></button>
+                                <button id="Tool_IceSpike"          tool="spike_thn"   class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/spike_ice.png"></button>
+                                <button id="Tool_Door"              tool="door"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/door.png"></button>
+                                <button id="Tool_Antenna"           tool="antenna"     class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/antenna.png"></button>
+                                <button id="Tool_RangeAntenna"      tool="rantenna"    class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/antenna_range.png"></button>
+                                <button id="Tool_FloatingAntenna"   tool="fantenna"    class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/antenna_float.png"></button>
+                                <button id="Tool_Battery"           tool="battery"     class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/battery.png"></button>
+                                <button id="Tool_AITrigger"         tool="trigg_ai"    class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/trigg_ai.png"></button>
+                                <p class="Options_Header">Snailax Only</p>
+                                <button id="Tool_ConveyorBelt"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/conveyor_belt.png"></button>
+                                <button id="Tool_BombSpawner"       class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/bomb_spawner.png"></button>
+                                <button id="Tool_GunUp"             class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gun_up.png"></button>
+                                <button id="Tool_GunSide"           class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gun_right.png"></button>
+                                <button id="Tool_GunDown"           class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gun_down.png"></button>
+                                <button id="Tool_WallDestruct"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_destructive.png"></button>
+                                <button id="Tool_WallExplode"       class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_explosive.png"></button>
+                                <button id="Tool_Turret"            class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/turret.png"></button>
+                                <button id="Tool_GiftEnemy"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gift_enemy.png"></button>
+                                <button id="Tool_Bubble"            class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/bubble.png"></button>
+                                <button id="Tool_DifficultyMeter"   class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/difficulty_meter.png"></button>
+                                <button id="Tool_DroneSpawner"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/drone_spawner.png"></button>
+                                <button id="Tool_BounceCube"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/bounce_enemy.png"></button>
+                                <button id="Tool_ExplorationPoint"  class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/exploration_point.png"></button>
+                                <button id="Tool_WallNoCollision"   class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_walkthrough.png"></button>
+                                <button id="Tool_Protector"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/protector.png"></button>
+                                <button id="Tool_Uplifter"          class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/uplifter.png"></button>
+                                <button id="Tool_Speedboost"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/speedbooster.png"></button>
+                                <button id="Tool_EvilSnail"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/evil_snail.png"></button>
+                                <button id="Tool_Squasher"          class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/squasher.png"></button>
+                                <button id="Tool_UnderwaterCurrent" class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/underwater_current.png"></button>
+                                <button id="Tool_Fish"              class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/fish.png"></button>
+                                <button id="Tool_Jellyfish"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/jellyfish.png"></button>
+                                <button id="Tool_Piranha"           class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/piranha.png"></button>
+                                <button id="Tool_WallBrain"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_brain.png"></button>
+                            </div>
+                        </div>
+                        <div id="ToolOptions_Tab" style="display:none">
+                            <!-- options -->
+                            <div style="margin-left:4px; width: calc(100% - 12px);">
+                                <!-- <a style="font-weight: bold; display: flex; align-items: center; justify-content: center;">General</a>
+                                <br> -->
+                                <!-- <a style="display: flex; align-items: center;">Viewport Zoom <input id="Viewport_Zoom" type="range" value="100" min="25" max="200" style="margin-left: 8px;"></a> -->
+                                <!-- <br> -->
+                                <!-- <a style="font-weight: bold; display: flex; align-items: center; justify-content: center;">Options & Details</a> -->
+                                <p class="Options_Header">Object Options</p>
+                                <a>Grid</a>
+                                <input id="Details_AlignmentX" type="number" value="60" placeholder="Alignment X">
+                                <input id="Details_AlignmentY" type="number" value="60" placeholder="Alignment Y">
+                                <br>
+                                <a>Scale</a>
+                                <input id="Details_ScaleX" type="number" value="1" placeholder="Scale X">
+                                <input id="Details_ScaleY" type="number" value="1" placeholder="Scale Y">
+                                <br>
+                                <a>Rotation (CCW°)</a>
+                                <input id="Details_RotationDegrees" type="number" value="0" placeholder="Degrees">
+                                <p class="Options_Header">Keybind Settings</p>
+                                <a>Rotate (R):</a>
+                                <input style="width: 128px;" id="Details_RotationAmount" type="number" value="" placeholder="Change by Degrees">
+                                <p class="Options_Header">Tool Details</p>
+                                <div style="display: flex; align-items: center; justify-content: center;">
+                                    <img id="Details_ToolIcon" width="64" height="64" src="../images/objects/unknown.png" draggable="false" style="object-fit: contain;">
+                                </div>
+                                <br>
+                                <div id="Details_ToolProperties" class="contentbox" style="width: 100%; height: 200px; resize: vertical; overflow: auto; white-space: wrap;"></div>
+                                
+                                <div id="ModuleTool_CustomSection">
+                                    <!-- tools can actually modify this div -->
+                                </div>
+                            </div>
+                        </div>
+                        <div id="Display_Tab" style="display:none">
+                            <div style="margin-left: 6px;">
+                                <div style="height: 16px;"></div>
+                                <label>
+                                    Display Grid
+                                    <input type="checkbox" checked="true">
+                                </label>
+                                <label>
+                                    Show Object Preview
+                                    <input type="checkbox" checked="true">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <p style="font-weight: bold; display: flex; align-items: center; justify-content: center;">Objects</p>
-            <div style="width: 100%; height: 80px; overflow: auto; overflow-y: hidden; white-space: nowrap;">
-                <button id="Tool_Player"            tool="player"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/player.png"></button>
-                <button id="Tool_Wall"              tool="wall"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall.png"></button>
-                <button id="Tool_WallGlow"          tool="wall_gl"     class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_glow.png"></button>
-                <button id="Tool_Spike"             tool="spike"       class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/spike.png"></button>
-                <button id="Tool_IceSpike"          tool="spike_thn"   class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/spike_ice.png"></button>
-                <button id="Tool_Door"              tool="door"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/door.png"></button>
-                <button id="Tool_Antenna"           tool="antenna"     class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/antenna.png"></button>
-                <button id="Tool_RangeAntenna"      tool="rantenna"    class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/antenna_range.png"></button>
-                <button id="Tool_FloatingAntenna"   tool="fantenna"    class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/antenna_float.png"></button>
-                <button id="Tool_Battery"           tool="battery"     class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/battery.png"></button>
-                <button id="Tool_AITrigger"         tool="trigg_ai"    class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/trigg_ai.png"></button>
-                <a style="margin-right: 48px;"></a>
-                <button id="Tool_ConveyorBelt"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/conveyor_belt.png"></button>
-                <button id="Tool_BombSpawner"       class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/bomb_spawner.png"></button>
-                <button id="Tool_GunUp"             class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gun_up.png"></button>
-                <button id="Tool_GunSide"           class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gun_right.png"></button>
-                <button id="Tool_GunDown"           class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gun_down.png"></button>
-                <button id="Tool_WallDestruct"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_destructive.png"></button>
-                <button id="Tool_WallExplode"       class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_explosive.png"></button>
-                <button id="Tool_Turret"            class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/turret.png"></button>
-                <button id="Tool_GiftEnemy"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/gift_enemy.png"></button>
-                <button id="Tool_Bubble"            class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/bubble.png"></button>
-                <button id="Tool_DifficultyMeter"   class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/difficulty_meter.png"></button>
-                <button id="Tool_DroneSpawner"      class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/drone_spawner.png"></button>
-                <button id="Tool_BounceCube"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/bounce_enemy.png"></button>
-                <button id="Tool_ExplorationPoint"  class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/exploration_point.png"></button>
-                <button id="Tool_WallNoCollision"   class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_walkthrough.png"></button>
-                <button id="Tool_Protector"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/protector.png"></button>
-                <button id="Tool_Uplifter"          class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/uplifter.png"></button>
-                <button id="Tool_Speedboost"        class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/speedbooster.png"></button>
-                <button id="Tool_EvilSnail"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/evil_snail.png"></button>
-                <button id="Tool_Squasher"          class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/squasher.png"></button>
-                <button id="Tool_UnderwaterCurrent" class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/underwater_current.png"></button>
-                <button id="Tool_Fish"              class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/fish.png"></button>
-                <button id="Tool_Jellyfish"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/jellyfish.png"></button>
-                <button id="Tool_Piranha"           class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/piranha.png"></button>
-                <button id="Tool_WallBrain"         class="windowsbutton"><img style="object-fit: contain;" draggable="false" width="32" height="32" src="../images/objects/wall_brain.png"></button>
             </div>
             <!-- <div style="height: 64px;"></div> -->
         </div>
